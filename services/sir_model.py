@@ -34,7 +34,7 @@ def generate_sir_data(population: int, r0: float, infectious_period: int = 14, d
     ret = odeint(deriv, y0, t, args=(N, beta, gamma))
     S, I, R = ret.T
     
-    # Format the payload for the frontend charts
+    # Format the payload perfectly for frontend charts
     simulation_results = []
     for day in range(days):
         simulation_results.append({
