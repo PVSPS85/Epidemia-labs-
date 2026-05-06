@@ -1,30 +1,27 @@
-from fastapi import APIRouter, HTTPException
-from typing import List, Optional
-from models.publication import PublicationBase, PublicationResponse
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from database import supabase
+from services.pdf_service import extract_text_from_pdf
 
 router = APIRouter()
 
-@router.get("/", response_model=List[PublicationResponse])
-async def get_publications(disease: Optional[str] = None):
-    try:
-        query = supabase.table("publications").select("*")
-        if disease:
-            query = query.eq("disease_name", disease)
-            
-        response = query.execute()
-        return response.data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/", response_model=PublicationResponse)
-async def create_publication(publication: PublicationBase):
-    try:
-        data = publication.model_dump()
-        response = supabase.table("publications").insert(data).execute()
-        
-        if not response.data:
-            raise HTTPException(status_code=400, detail="Failed to create publication")
-        return response.data[0]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.post("/upload")
+async def upload_research(
+    disease_id: str = Form(...),
+    file: UploadFile = File(...)
+):
+    # 1. Extract text from the PDF for AI indexing
+    text_content = await extract_text_from_pdf(file)
+    
+    # 2. Upload file to Supabase Storage (Will fully work tomorrow!)
+    file_path = f"research/{disease_id}/{file.filename}"
+    file_content = await file.read()
+    
+    # Note: Supabase calls are mocked out until we put in the real keys tomorrow
+    # supabase.storage.from_("publications").upload(file_path, file_content)
+    # public_url = supabase.storage.from_("publications").get_public_url(file_path)
+    
+    return {
+        "message": "Research paper processed successfully",
+        "url": "https://dummy-url.com/fake.pdf",
+        "preview_text": text_content[:500] # Return first 500 chars as a summary
+    }
