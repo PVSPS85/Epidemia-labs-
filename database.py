@@ -1,29 +1,17 @@
-
-Copy
-
 from supabase import create_client, Client
 from config import get_settings
- 
+
 settings = get_settings()
- 
-# Public client — used for normal read/write operations
+
+# Standard client using the public Anon Key
 supabase: Client = create_client(
-    settings.supabase_url,
-    settings.supabase_anon_key,
+    settings.SUPABASE_URL, 
+    settings.SUPABASE_KEY
 )
- 
-# Service client — bypasses Row Level Security (use carefully)
+
+# Admin client using the Service Role Key
+# WARNING: This bypasses Row Level Security (RLS). Use only for protected backend operations.
 supabase_admin: Client = create_client(
-    settings.supabase_url,
-    settings.supabase_service_key,
+    settings.SUPABASE_URL, 
+    settings.SUPABASE_SERVICE_KEY
 )
- 
- 
-def get_db() -> Client:
-    """Return the public Supabase client."""
-    return supabase
- 
- 
-def get_admin_db() -> Client:
-    """Return the admin Supabase client (bypasses RLS)."""
-    return supabase_admin

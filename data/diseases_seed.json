@@ -1,1 +1,38 @@
-
+[
+  {
+    "id": "covid-19",
+    "name": "COVID-19",
+    "description": "A contagious disease caused by the coronavirus SARS-CoV-2. It primarily affects the respiratory system and accesses host cells via the ACE2 receptor.",
+    "symptoms": ["Fever", "Cough", "Fatigue", "Loss of smell/taste", "Shortness of breath"],
+    "transmission": "Airborne transmission via droplets/aerosols, and contact transmission.",
+    "r0": 2.5,
+    "population": 1000000
+  },
+  {
+    "id": "influenza",
+    "name": "Seasonal Influenza",
+    "description": "An acute respiratory infection caused by influenza viruses. Severity and timing vary by location, influenced by circulating viruses and population immunity.",
+    "symptoms": ["High fever", "Runny nose", "Sore throat", "Muscle/joint pain", "Headache"],
+    "transmission": "Airborne droplets and contact with contaminated surfaces.",
+    "r0": 1.5,
+    "population": 1000000
+  },
+  {
+    "id": "dengue",
+    "name": "Dengue Fever",
+    "description": "A mosquito-borne viral infection causing a severe flu-like illness. Can progress to severe dengue (Dengue Hemorrhagic Fever) causing bleeding and blood plasma leakage.",
+    "symptoms": ["High fever", "Severe headache", "Pain behind the eyes", "Muscle and joint pains", "Rash"],
+    "transmission": "Vector-borne (primarily Aedes aegypti mosquitoes).",
+    "r0": 4.0,
+    "population": 1000000
+  },
+  {
+    "id": "malaria",
+    "name": "Malaria",
+    "description": "A life-threatening disease caused by Plasmodium parasites (e.g., P. falciparum, P. vivax) transmitted to people through the bites of infected female Anopheles mosquitoes.",
+    "symptoms": ["Fever", "Chills", "Headache", "Nausea and vomiting", "Muscle pain and fatigue"],
+    "transmission": "Vector-borne (Anopheles mosquitoes).",
+    "r0": 15.0,
+    "population": 1000000
+  }
+]
