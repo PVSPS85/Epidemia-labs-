@@ -16,3 +16,6 @@ scipy==1.12.0
 
 # Environment Management
 python-dotenv==1.0.1
+
+# PDF Parsing (Added for Research Paper System)
+PyPDF2==3.0.1
