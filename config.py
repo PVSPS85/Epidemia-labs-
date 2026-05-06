@@ -1,27 +1,20 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
- 
- 
-class Settings(BaseSettings):
-    # Supabase
-    supabase_url: str
-    supabase_anon_key: str
-    supabase_service_key: str
- 
-    # Gemini AI
-    gemini_api_key: str
- 
-    # App
-    app_env: str = "development"
-    cors_origins: str = "http://localhost:3000"
- 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
- 
- 
-@lru_cache()
-def get_settings() -> Settings:
-    """Cache settings so they're only loaded once."""
-    return Settings()
 
+class Settings(BaseSettings):
+    SUPABASE_URL: str
+    SUPABASE_KEY: str
+    SUPABASE_SERVICE_KEY: str
+    GEMINI_API_KEY: str
+    CORS_ORIGINS: str = "*"
+
+    # Reads directly from the .env file in the backend root
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+@lru_cache
+def get_settings() -> Settings:
+    """
+    Caches the settings to prevent multiple disk reads.
+    Returns a validated Settings object.
+    """
+    return Settings()
