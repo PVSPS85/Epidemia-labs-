@@ -13,10 +13,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Allow frontend (Next.js) to talk to this API
+# Allow all origins for seamless development in Codespaces & Local
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS.split(","),
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

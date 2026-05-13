@@ -13,18 +13,22 @@ class AuthRequest(BaseModel):
 @router.post("/signup")
 async def signup(request: AuthRequest):
     try:
-        # Talk to Supabase to create the user securely
         response = supabase.auth.sign_up({
             "email": request.email,
             "password": request.password,
         })
-        
-        # Return the real User ID from Supabase
         if response.user:
-            return {"id": response.user.id, "email": request.email, "role": request.role}
+            user = {
+                "id": response.user.id,
+                "email": request.email,
+                "role": request.role,
+            }
+            # signup may not return a session until email is confirmed;
+            # return a token only if one is available
+            token = response.session.access_token if response.session else ""
+            return {"user": user, "token": token}
         else:
             raise HTTPException(status_code=400, detail="Signup failed.")
-            
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -35,6 +39,15 @@ async def login(request: AuthRequest):
             "email": request.email,
             "password": request.password,
         })
-        return {"message": "Login successful", "token": response.session.access_token}
+        user = {
+            "id": response.user.id,
+            "email": response.user.email,
+            "role": request.role,
+        }
+        return {
+            "message": "Login successful",
+            "user": user,
+            "token": response.session.access_token,
+        }
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid credentials")
