@@ -1,12 +1,25 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'Epidemia-Labs | Epidemiological Research Platform',
-  description: 'Professional-grade platform for disease tracking and SIR epidemiological simulations.',
+  title: 'Epidemia-Labs | Disease Spread Simulation Platform',
+  description:
+    'Professional-grade epidemiological research platform for real-time disease tracking, SIR/SEIR simulation modeling, and global outbreak analytics.',
+  keywords: ['epidemiology', 'SIR model', 'disease simulation', 'outbreak tracking'],
+  viewport: 'width=device-width, initial-scale=1',
 };
 
 export default function RootLayout({
@@ -15,8 +28,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} min-h-screen`}>{children}</body>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className={`${inter.className} min-h-screen bg-background text-textPrimary antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

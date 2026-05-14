@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from models.user import UserRole
-from database import supabase
+from database import supabase, supabase_admin
 
 router = APIRouter()
 
@@ -13,19 +13,26 @@ class AuthRequest(BaseModel):
 @router.post("/signup")
 async def signup(request: AuthRequest):
     try:
-        response = supabase.auth.sign_up({
+        # Create user with auto-confirmed email using admin client
+        response = supabase_admin.auth.admin.create_user({
             "email": request.email,
             "password": request.password,
+            "email_confirm": True
         })
+        
         if response.user:
+            # Immediately sign them in to generate an active session token
+            session_resp = supabase.auth.sign_in_with_password({
+                "email": request.email,
+                "password": request.password,
+            })
+            
             user = {
                 "id": response.user.id,
                 "email": request.email,
                 "role": request.role,
             }
-            # signup may not return a session until email is confirmed;
-            # return a token only if one is available
-            token = response.session.access_token if response.session else ""
+            token = session_resp.session.access_token if session_resp.session else ""
             return {"user": user, "token": token}
         else:
             raise HTTPException(status_code=400, detail="Signup failed.")
