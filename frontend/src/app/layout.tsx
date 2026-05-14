@@ -19,7 +19,11 @@ export const metadata: Metadata = {
   description:
     'Professional-grade epidemiological research platform for real-time disease tracking, SIR/SEIR simulation modeling, and global outbreak analytics.',
   keywords: ['epidemiology', 'SIR model', 'disease simulation', 'outbreak tracking'],
-  viewport: 'width=device-width, initial-scale=1',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({

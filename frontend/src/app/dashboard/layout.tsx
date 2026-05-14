@@ -1,6 +1,7 @@
 // frontend/src/app/dashboard/layout.tsx
 import { ReactNode } from 'react';
 import SidebarNav from '@/components/dashboard/SidebarNav';
+import ChatbotWidget from '@/components/dashboard/ChatbotWidget';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
@@ -17,6 +18,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="flex-1 overflow-y-auto overflow-x-hidden relative z-10">
           {children}
         </div>
+        
+        {/* Global AI Chatbot Widget */}
+        <ChatbotWidget />
       </main>
     </div>
   );

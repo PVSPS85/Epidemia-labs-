@@ -48,4 +48,8 @@ export const api = {
     apiClient.post('/publications/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     }),
+
+  // AI Chatbot
+  chatWithAI: (question: string, context: string = "") =>
+    apiClient.post('/api/chat/', { question, context }),
 };
