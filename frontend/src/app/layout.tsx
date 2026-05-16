@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -33,8 +33,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className={`${inter.className} min-h-screen bg-background text-textPrimary antialiased`}>
-        {children}
+      <body className={`${inter.className} min-h-screen bg-bg-base text-textPrimary antialiased`}>
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

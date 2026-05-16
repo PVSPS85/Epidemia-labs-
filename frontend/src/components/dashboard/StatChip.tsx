@@ -1,11 +1,11 @@
-// frontend/src/components/dashboard/StatChip.tsx
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
-type ColorVariant = 'cyan' | 'purple' | 'red' | 'green' | 'yellow' | 'default';
+type ColorVariant = 'blue' | 'yellow' | 'red' | 'green' | 'default';
 
 interface StatChipProps {
   label: string;
-  value: string | number;
+  value: number;
   sub?: string;
   variant?: ColorVariant;
   icon?: ReactNode;
@@ -13,13 +13,18 @@ interface StatChipProps {
 }
 
 const VARIANTS: Record<ColorVariant, { glow: string; accent: string; text: string }> = {
-  cyan:    { glow: 'bg-primary/10',   accent: 'text-primary',   text: 'border-primary/15' },
-  purple:  { glow: 'bg-secondary/10', accent: 'text-secondary', text: 'border-secondary/15' },
-  red:     { glow: 'bg-danger/10',    accent: 'text-danger',    text: 'border-danger/15' },
-  green:   { glow: 'bg-success/10',   accent: 'text-success',   text: 'border-success/15' },
-  yellow:  { glow: 'bg-warning/10',   accent: 'text-warning',   text: 'border-warning/15' },
-  default: { glow: 'bg-muted/10',     accent: 'text-textSecondary', text: 'border-border' },
+  blue:    { glow: 'bg-action-primary/10',   accent: 'text-action-primary',   text: 'border-action-primary/15' },
+  yellow:  { glow: 'bg-sir-susceptible/10', accent: 'text-sir-susceptible', text: 'border-sir-susceptible/15' },
+  red:     { glow: 'bg-sir-infected/10',    accent: 'text-sir-infected',    text: 'border-sir-infected/15' },
+  green:   { glow: 'bg-sir-recovered/10',   accent: 'text-sir-recovered',   text: 'border-sir-recovered/15' },
+  default: { glow: 'bg-text-muted/10',     accent: 'text-textSecondary', text: 'border-bg-border' },
 };
+
+function formatValue(n: number) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+  return n.toLocaleString();
+}
 
 export default function StatChip({
   label,
@@ -30,33 +35,49 @@ export default function StatChip({
   loading = false,
 }: StatChipProps) {
   const { glow, accent, text } = VARIANTS[variant];
+  
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (latest) => formatValue(Math.round(latest)));
+
+  useEffect(() => {
+    const controls = animate(count, value, { duration: 1.5, ease: "easeOut" });
+    return controls.stop;
+  }, [value, count]);
 
   return (
     <div
-      className={`relative bg-surface border ${text} rounded-xl p-4 flex flex-col justify-between overflow-hidden group transition-all duration-200 hover:border-opacity-50`}
+      className={`relative bg-bg-surface border ${text} rounded-xl p-5 flex flex-col justify-between overflow-hidden group transition-all duration-200 hover:border-opacity-50`}
     >
-      {/* Corner glow orb */}
       <div
-        className={`absolute -top-3 -right-3 w-14 h-14 ${glow} rounded-full blur-xl pointer-events-none group-hover:scale-150 transition-transform duration-500`}
+        className={`absolute -top-3 -right-3 w-16 h-16 ${glow} rounded-full blur-xl pointer-events-none group-hover:scale-150 transition-transform duration-500`}
       />
 
-      <span className="text-[11px] text-textMuted font-mono uppercase tracking-wider leading-none">
-        {label}
-      </span>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[13px] text-textSecondary font-semibold tracking-wide">
+          {label}
+        </span>
+        {icon && <span className={`shrink-0 ${accent}`}>{icon}</span>}
+      </div>
 
-      <div className="flex items-end justify-between mt-3 gap-2">
+      <div className="flex items-end justify-between mt-1 gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          {icon && <span className={`shrink-0 ${accent}`}>{icon}</span>}
           {loading ? (
-            <div className="h-7 w-20 bg-muted/30 rounded animate-pulse" />
+            <div className="h-10 w-24 bg-bg-border rounded animate-pulse" />
           ) : (
-            <span className="text-xl font-bold text-white truncate leading-none">{value}</span>
+            <motion.span className={`text-display-xl font-bold ${accent} leading-none truncate`}>
+              {rounded}
+            </motion.span>
           )}
         </div>
-        {sub && !loading && (
-          <span className={`text-xs font-mono shrink-0 ${accent}`}>{sub}</span>
-        )}
       </div>
+      
+      {sub && !loading && (
+        <div className="mt-2 flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-action-success/10 text-action-success border border-action-success/20">
+            {sub}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

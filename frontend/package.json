@@ -9,16 +9,23 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@popperjs/core": "^2.11.8",
     "@types/d3-scale": "^4.0.9",
     "@types/react-simple-maps": "^3.0.6",
     "axios": "^1.6.8",
     "d3-scale": "^4.0.2",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^0.378.0",
+    "motion": "^10.16.2",
     "next": "14.2.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.51.3",
+    "react-popper": "^2.3.0",
     "react-simple-maps": "^3.0.0",
     "recharts": "^2.12.7",
+    "sonner": "^1.4.41",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

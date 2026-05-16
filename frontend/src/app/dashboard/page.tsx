@@ -1,332 +1,131 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
-import { api } from '@/lib/api';
-import { useSimulationStore } from '@/store/simulationStore';
-import { SimulationResult } from '@/types';
+import { useEffect, useState } from 'react';
+import { useDiseaseStore } from '@/store/diseaseStore';
 import StatChip from '@/components/dashboard/StatChip';
-import SIRChart from '@/components/dashboard/SIRChart';
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  Users,
-  TrendingUp,
-  AlertTriangle,
-  Activity,
-  CheckCircle2,
-} from 'lucide-react';
-import { useState } from 'react';
+import DiseaseCard from '@/components/disease/DiseaseCard';
+import WorldMapPreview from '@/components/disease/WorldMapPreview';
+import { Activity, Users, AlertTriangle, ShieldCheck, FileText } from 'lucide-react';
+import Link from 'next/link';
 
-/* ── Simulation Parameter Slider ─────────────────────────────────────────── */
-function ParamSlider({
-  label,
-  value,
-  min,
-  max,
-  step,
-  format,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  format: (v: number) => string;
-  onChange: (v: number) => void;
-}) {
-  const pct = ((value - min) / (max - min)) * 100;
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <span className="text-xs text-textSecondary font-mono">{label}</span>
-        <span className="text-xs font-bold text-primary font-mono">{format(value)}</span>
-      </div>
-      <div className="relative">
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="w-full h-1 cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, #00D1FF ${pct}%, #1C212B ${pct}%)`,
-          }}
-        />
-      </div>
-      <div className="flex justify-between text-[10px] text-textMuted font-mono">
-        <span>{format(min)}</span>
-        <span>{format(max)}</span>
-      </div>
-    </div>
-  );
-}
-
-/* ── Main Dashboard Page ─────────────────────────────────────────────────── */
 export default function DashboardPage() {
-  const {
-    population, r0, days, model, results, isLoading, peakInfected, peakDay,
-    totalRecovered, activeInfected,
-    setPopulation, setR0, setDays, setModel, setResults, setLoading, setError, computePeaks,
-  } = useSimulationStore();
+  const { diseases, fetchDiseases, isLoading } = useDiseaseStore();
+  const [activeTab, setActiveTab] = useState('All');
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedRange, setSelectedRange] = useState<'30D' | '60D' | '90D' | '120D'>('120D');
-
-  /* Run the simulation */
-  const runSimulation = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.runSimulation({ population, r0, days });
-      const data = res.data as SimulationResult[];
-      setResults(data);
-    } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      setError(axiosErr.response?.data?.detail || 'Simulation failed');
-    } finally {
-      setLoading(false);
-    }
-  }, [population, r0, days, setLoading, setError, setResults]);
-
-  /* Auto-run on mount */
   useEffect(() => {
-    runSimulation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    fetchDiseases();
+  }, [fetchDiseases]);
 
-  /* Recompute peaks whenever r0/population/days change */
-  useEffect(() => {
-    computePeaks();
-  }, [results, computePeaks]);
+  const stats = {
+    activeCases: diseases.reduce((acc, d) => acc + d.stats.activeCases, 0) || 0,
+    atRisk: diseases.length > 0 ? diseases.length * 15000 : 0, 
+    recovered: diseases.reduce((acc, d) => acc + d.stats.recovered, 0) || 0,
+    publications: 0
+  };
 
-  /* Filter results by selected time range */
-  const rangeMap = { '30D': 30, '60D': 60, '90D': 90, '120D': 120 };
-  const chartData = results.filter((d) => d.day <= (rangeMap[selectedRange] ?? days));
-
-  const growthRate = r0 > 1 ? `+${((r0 - 1) * 100).toFixed(0)}%` : `${((r0 - 1) * 100).toFixed(0)}%`;
-  const fmtPop = (n: number) =>
-    n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : `${(n / 1_000).toFixed(0)}K`;
+  const tabs = ['All', 'Pandemic', 'Epidemic', 'Endemic', 'Contained'];
+  
+  const filteredDiseases = activeTab === 'All' 
+    ? diseases 
+    : diseases.filter(d => 
+        activeTab === 'Contained' 
+          ? d.status === 'contained' 
+          : d.classification === activeTab.toLowerCase()
+      );
 
   return (
-    <div className="h-full flex flex-col p-6 gap-5">
-      {/* ── Page Header ──────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between shrink-0">
-        <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Global Epidemic Analytics
-            </h2>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] bg-success/15 text-success border border-success/25 font-mono uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              Live
-            </span>
-          </div>
-          <p className="text-textSecondary text-sm mt-0.5">
-            Real-time epidemiological modelling and predictive outbreak engine.
-          </p>
+    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+      
+      {/* HERO STAT STRIP */}
+      <section>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <StatChip label="Active Cases" value={stats.activeCases} variant="red" sub="+12% this week" icon={<AlertTriangle className="w-5 h-5" />} loading={isLoading} />
+          <StatChip label="At Risk Pop." value={stats.atRisk} variant="yellow" sub="Global estimate" icon={<Users className="w-5 h-5" />} loading={isLoading} />
+          <StatChip label="Recovered" value={stats.recovered} variant="green" sub="+5.2% this week" icon={<ShieldCheck className="w-5 h-5" />} loading={isLoading} />
+          <StatChip label="Publications" value={stats.publications} variant="blue" sub="3 new today" icon={<FileText className="w-5 h-5" />} loading={isLoading} />
         </div>
+      </section>
 
-        {/* Controls bar */}
-        <div className="flex items-center gap-3">
-          {/* Model selector */}
-          <div className="flex bg-surface border border-border rounded-lg p-0.5">
-            {(['SIR', 'SEIR'] as const).map((m) => (
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+        
+        {/* LEFT COLUMN: ACTIVE OUTBREAK FEED */}
+        <div className="xl:col-span-2 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-heading-xl font-bold flex items-center gap-3">
+              Active Outbreak Feed
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-action-danger opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-action-danger"></span>
+              </span>
+            </h2>
+          </div>
+
+          <div className="flex gap-2 border-b border-bg-border pb-px">
+            {tabs.map(tab => (
               <button
-                key={m}
-                onClick={() => setModel(m)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                  model === m
-                    ? 'bg-background text-primary shadow-sm'
-                    : 'text-textSecondary hover:text-white'
-                }`}
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? 'border-action-primary text-action-primary' : 'border-transparent text-textSecondary hover:text-textPrimary'}`}
               >
-                {m} Model
+                {tab}
               </button>
             ))}
           </div>
 
-          {/* Play / Reset */}
-          <button
-            id="sim-play"
-            onClick={() => {
-              setIsPlaying(!isPlaying);
-              if (!isPlaying) runSimulation();
-            }}
-            className="w-9 h-9 rounded-lg bg-primary/15 text-primary hover:bg-primary/25 border border-primary/20 flex items-center justify-center transition-all"
-            title={isPlaying ? 'Pause' : 'Run simulation'}
-          >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          </button>
-          <button
-            id="sim-reset"
-            onClick={runSimulation}
-            disabled={isLoading}
-            className="w-9 h-9 rounded-lg bg-surface border border-border text-textSecondary hover:text-white hover:border-border/80 flex items-center justify-center transition-all disabled:opacity-50"
-            title="Re-run simulation"
-          >
-            <RotateCcw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-      </header>
-
-      {/* ── Stats Strip ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3 shrink-0">
-        <StatChip
-          label="Population (N)"
-          value={fmtPop(population)}
-          variant="cyan"
-          icon={<Users className="w-4 h-4" />}
-          loading={isLoading}
-        />
-        <StatChip
-          label="Reproduction Rate (R₀)"
-          value={r0.toFixed(2)}
-          sub={growthRate}
-          variant="purple"
-          icon={<TrendingUp className="w-4 h-4" />}
-          loading={isLoading}
-        />
-        <StatChip
-          label="Peak Infection Day"
-          value={`Day ${peakDay}`}
-          sub={fmtPop(peakInfected)}
-          variant="red"
-          icon={<AlertTriangle className="w-4 h-4" />}
-          loading={isLoading}
-        />
-        <StatChip
-          label="Total Recovered"
-          value={fmtPop(totalRecovered)}
-          variant="green"
-          icon={<CheckCircle2 className="w-4 h-4" />}
-          loading={isLoading}
-        />
-        <StatChip
-          label="Active Infected"
-          value={fmtPop(activeInfected)}
-          variant="yellow"
-          icon={<Activity className="w-4 h-4" />}
-          loading={isLoading}
-        />
-      </div>
-
-      {/* ── Main content row: Chart + Controls ─────────────────────────── */}
-      <div className="flex-1 flex gap-4 min-h-0">
-        {/* Chart panel */}
-        <div className="flex-1 bg-surface border border-border rounded-2xl p-5 flex flex-col min-h-0">
-          {/* Chart header */}
-          <div className="flex items-center justify-between mb-4 shrink-0">
-            <h3 className="text-sm font-semibold text-white font-mono flex items-center gap-2">
-              <Activity className="w-4 h-4 text-primary" />
-              SIR Epidemic Curve
-              {model === 'SEIR' && (
-                <span className="text-[10px] px-1.5 py-0.5 bg-secondary/20 text-secondary rounded border border-secondary/30">
-                  SEIR (soon)
-                </span>
-              )}
-            </h3>
-
-            {/* Time range chips */}
-            <div className="flex items-center gap-1 bg-background rounded-lg p-0.5 border border-border">
-              {(['30D', '60D', '90D', '120D'] as const).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setSelectedRange(r)}
-                  className={`px-2.5 py-1 text-xs font-mono rounded-md transition-all ${
-                    selectedRange === r
-                      ? 'bg-surface text-primary'
-                      : 'text-textMuted hover:text-textSecondary'
-                  }`}
-                >
-                  {r}
-                </button>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="w-full h-[400px] bg-surface-2 rounded-xl animate-pulse"></div>
               ))}
             </div>
-          </div>
-
-          {/* Chart */}
-          <div className="flex-1 min-h-0">
-            <SIRChart data={chartData} loading={isLoading} peakDay={peakDay} />
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredDiseases.length > 0 ? (
+                filteredDiseases.map(disease => (
+                  <DiseaseCard key={disease.id} disease={disease} />
+                ))
+              ) : (
+                <div className="col-span-full py-12 text-center text-textMuted border border-dashed border-bg-border rounded-xl">
+                  No diseases found for this filter.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Simulation controls panel */}
-        <div className="w-64 shrink-0 flex flex-col gap-3">
-          <div className="bg-surface border border-border rounded-2xl p-5 space-y-6">
-            <div>
-              <h4 className="text-xs font-semibold text-white font-mono uppercase tracking-wider mb-1">
-                Simulation Parameters
-              </h4>
-              <p className="text-[11px] text-textMuted">
-                Adjust and click Run to model a new scenario.
-              </p>
-            </div>
+        {/* RIGHT COLUMN: MAP & TRENDING */}
+        <div className="space-y-10">
+          
+          <section>
+            <h2 className="text-heading-lg font-bold mb-4">Global Alert Map</h2>
+            <WorldMapPreview />
+          </section>
 
-            <div className="space-y-5">
-              <ParamSlider
-                label="Population (N)"
-                value={population}
-                min={10_000}
-                max={10_000_000}
-                step={10_000}
-                format={(v) => fmtPop(v)}
-                onChange={setPopulation}
-              />
-              <ParamSlider
-                label="Reproduction Rate (R₀)"
-                value={r0}
-                min={0.5}
-                max={8}
-                step={0.1}
-                format={(v) => v.toFixed(1)}
-                onChange={setR0}
-              />
-              <ParamSlider
-                label="Simulation Days"
-                value={days}
-                min={30}
-                max={365}
-                step={5}
-                format={(v) => `${v}d`}
-                onChange={setDays}
-              />
-            </div>
-
-            <button
-              id="run-simulation"
-              onClick={runSimulation}
-              disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-background font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm transition-all shadow-glow-cyan hover:shadow-[0_0_20px_rgba(0,209,255,0.35)] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <><RotateCcw className="w-4 h-4 animate-spin" /> Computing...</>
-              ) : (
-                <><Play className="w-4 h-4" /> Run Simulation</>
-              )}
-            </button>
-          </div>
-
-          {/* R₀ context card */}
-          <div className="bg-surface border border-border rounded-2xl p-4 text-xs space-y-2">
-            <p className="text-textSecondary font-mono text-[10px] uppercase tracking-wider">
-              R₀ Interpretation
-            </p>
-            {[
-              { range: '< 1.0', desc: 'Controlled — epidemic declines', color: 'text-success' },
-              { range: '1.0–2.0', desc: 'Moderate spread', color: 'text-warning' },
-              { range: '2.0–4.0', desc: 'High transmission', color: 'text-danger' },
-              { range: '> 4.0', desc: 'Explosive outbreak', color: 'text-danger' },
-            ].map(({ range, desc, color }) => (
-              <div key={range} className="flex items-start gap-2">
-                <span className={`font-mono font-bold shrink-0 ${color}`}>{range}</span>
-                <span className="text-textMuted">{desc}</span>
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-heading-lg font-bold">Trending Research</h2>
+              <div className="flex gap-2">
+                <button className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center text-textSecondary hover:text-textPrimary transition-colors">&larr;</button>
+                <button className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center text-textSecondary hover:text-textPrimary transition-colors">&rarr;</button>
               </div>
-            ))}
-          </div>
+            </div>
+            
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="bg-bg-surface border border-bg-border p-4 rounded-xl hover:border-action-primary/50 transition-colors cursor-pointer group">
+                  <div className="text-[10px] text-action-primary font-mono uppercase mb-1">Epidemiology • 2h ago</div>
+                  <h4 className="text-sm font-semibold text-textPrimary group-hover:text-action-primary transition-colors leading-snug mb-2">
+                    Comparative Analysis of R₀ in Urban vs Rural environments
+                  </h4>
+                  <div className="flex items-center gap-2 text-[11px] text-textSecondary">
+                    <img src={`https://i.pravatar.cc/100?img=${i+5}`} alt="" className="w-4 h-4 rounded-full" />
+                    Dr. Alan Turing
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
         </div>
       </div>
     </div>

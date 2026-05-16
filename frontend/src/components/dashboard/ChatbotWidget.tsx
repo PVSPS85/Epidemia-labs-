@@ -38,11 +38,17 @@ export default function ChatbotWidget() {
     setLoading(true);
 
     try {
-      const res = await api.chatWithAI(userMessage.content);
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: userMessage.content, context: "" })
+      });
+      const data = await res.json();
+      
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: res.data.answer || "I'm sorry, I couldn't process that request.",
+        content: data.answer || "I'm sorry, I couldn't process that request.",
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {

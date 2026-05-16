@@ -11,7 +11,7 @@ const getBaseUrl = () => {
     }
   }
   // Default to localhost or env var
-  return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 };
 
 export const apiClient = axios.create({
@@ -34,22 +34,39 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// Intercept responses for robust error logging
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("API Request Failed:", {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    return Promise.reject(error);
+  }
+);
+
 export const api = {
   // Diseases
-  getDiseases: () => apiClient.get('/diseases/'),
+  getDiseases: () => apiClient.get('/diseases'),
   getDiseaseById: (id: string) => apiClient.get(`/diseases/${id}`),
   
   // Simulation
-  runSimulation: (data: { population: number; r0: number; days: number }) => 
-    apiClient.post('/simulate/run', data),
+  runSimulation: (data: { beta: number; gamma: number; N: number; I0: number; days: number }) => 
+    apiClient.post('/simulate', data),
     
   // Publications
-  uploadPublication: (formData: FormData) => 
-    apiClient.post('/publications/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    }),
+  getPublications: () => apiClient.get('/publications'),
+  getPublicationById: (id: string) => apiClient.get(`/publications/${id}`),
+  uploadPublication: (data: any) => apiClient.post('/publications', data),
+
+  // Analytics
+  getAnalytics: () => apiClient.get('/analytics'),
 
   // AI Chatbot
   chatWithAI: (question: string, context: string = "") =>
-    apiClient.post('/api/chat/', { question, context }),
+    apiClient.post('/chat', { question, context }),
 };

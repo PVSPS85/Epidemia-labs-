@@ -1,36 +1,80 @@
-// frontend/src/types/index.ts
+export type SeverityLevel = "low" | "moderate" | "high" | "critical";
+export type PathogenType = "virus" | "bacteria" | "fungal" | "prion" | "parasite";
+export type Classification = "pandemic" | "epidemic" | "endemic" | "outbreak";
+export type Status = "active" | "contained" | "resolved";
 
-export interface User {
+export interface Citation {
   id: string;
-  email: string;
-  role: 'Viewer' | 'Research Publisher';
+  title: string;
+  authors: string[];
+  url: string;
+}
+
+export interface Publisher {
+  id: string;
+  name: string;
+  institution: string;
+  avatar: string;
+  publications: number;
+  followers: number;
+  verified: boolean;
 }
 
 export interface Disease {
   id: string;
   name: string;
-  description: string;
-  r0: number;
-  mortality_rate: number;
-  incubation_period_days: number;
-  recovery_period_days: number;
-  population: number;
-  symptoms: string;
-  transmission: string;
+  pathogenType: PathogenType;
+  classification: Classification;
+  severity: SeverityLevel;
+  status: Status;
+  stats: {
+    totalCases: number;
+    activeCases: number;
+    deaths: number;
+    recovered: number;
+    cfr: number;       // case fatality rate %
+    r0: number;        // basic reproduction number
+  };
+  sirParams: {
+    beta: number;
+    gamma: number;
+    N: number;
+    I0: number;
+  };
+  affectedCountries: {
+    iso: string;
+    cases: number;
+    severity: SeverityLevel;
+  }[];
+  hotspots: {
+    lat: number;
+    lng: number;
+    label: string;
+    intensity: number;
+  }[];
+  article: {
+    abstract: string;
+    body: string;
+    citations: Citation[];
+  };
+  author: Publisher;
+  publishedAt: string;
+  coverImage: string;
+  tags: string[];
 }
 
-export interface Publication {
-  id: string;
-  title: string;
-  content: string;
-  disease_id: string;
-  uploaded_by: string;
-  created_at: string;
-}
-
-export interface SimulationResult {
+export interface SIRDataPoint {
   day: number;
-  susceptible: number;
-  infected: number;
-  recovered: number;
+  S: number;   // Susceptible
+  I: number;   // Infected
+  R: number;   // Recovered
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: "viewer" | "publisher";
+  avatar: string;
+  savedDiseases: string[];
 }
