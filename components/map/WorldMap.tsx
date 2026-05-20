@@ -2,7 +2,7 @@ import { Globe, Crosshair } from 'lucide-react';
 
 export default function WorldMap() {
   return (
-    <div className="w-full h-[400px] bg-[#0A0A0B] border border-border rounded-xl relative overflow-hidden flex flex-col items-center justify-center shadow-lg shadow-black/50 group">
+    <div className="w-full h-[400px] bg-background border border-border rounded-xl relative overflow-hidden flex flex-col items-center justify-center shadow-lg shadow-black/50 group">
       {/* Tactical Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.05)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
       

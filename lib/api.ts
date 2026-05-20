@@ -32,6 +32,7 @@ export const api = {
     apiClient.post('/simulate/run', data),
     
   // Publications
+  getPublications: () => apiClient.get('/publications/'),
   uploadPublication: (formData: FormData) => 
     apiClient.post('/publications/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }

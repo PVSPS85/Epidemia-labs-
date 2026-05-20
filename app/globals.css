@@ -5,11 +5,19 @@
 
 :root {
   color-scheme: dark;
+  --background: #0A0A0B;
+  --surface: #121214;
+  --border: #27272A;
+  --primary: #10B981;
+  --danger: #EF4444;
+  --susceptible: #3B82F6;
+  --textPrimary: #F4F4F5;
+  --textSecondary: #A1A1AA;
 }
 
 body {
-  background-color: #0A0A0B;
-  color: #F4F4F5;
+  background-color: var(--background);
+  color: var(--textPrimary);
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;

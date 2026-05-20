@@ -1,11 +1,40 @@
-import { CheckCircle2, Clock } from 'lucide-react';
+import { CheckCircle2, Clock, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+
+interface Publication {
+  id: number;
+  title: string;
+  disease: string;
+  status: string;
+  date: string;
+}
 
 export default function SubmissionHistory() {
-  // We'll mock this data until we build a GET route for user history
-  const history = [
-    { id: 1, title: 'Variant Mutation Analysis', disease: 'COVID-19', status: 'Approved', date: 'Oct 24, 2025' },
-    { id: 2, title: 'Vector Transmission Rates', disease: 'Malaria', status: 'Pending AI Parse', date: 'Oct 23, 2025' },
-  ];
+  const [history, setHistory] = useState<Publication[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await api.getPublications();
+        setHistory(response.data);
+      } catch (error) {
+        console.error('Failed to fetch publications:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-surface border border-border rounded-xl flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">

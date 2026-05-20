@@ -1,131 +1,199 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import { Disease } from '@/types';
-import { Database, Search, AlertCircle, Loader2, Biohazard } from 'lucide-react';
+import { useDiseaseStore } from '@/store/diseaseStore';
+import DiseaseCard from '@/components/disease/DiseaseCard';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Database, Search, ServerCrash, RefreshCw, Loader2 } from 'lucide-react';
 
-function DiseaseCard({ disease }: { disease: Disease }) {
-  const r0Color =
-    disease.r0 >= 4 ? 'text-danger border-danger/20 bg-danger/10' :
-    disease.r0 >= 2 ? 'text-warning border-warning/20 bg-warning/10' :
-    'text-success border-success/20 bg-success/10';
+const PATHOGEN_FILTERS = ['All', 'Virus', 'Bacteria', 'Fungal', 'Prion', 'Parasite'] as const;
+const SEVERITY_FILTERS = ['All', 'Critical', 'High', 'Moderate', 'Low'] as const;
 
+function SkeletonCard() {
   return (
-    <div className="bg-surface border border-border rounded-xl p-5 hover:border-border/80 hover:shadow-card transition-all duration-200 group">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-secondary/15 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-secondary/25 transition-colors">
-            <Biohazard className="w-4 h-4 text-secondary" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white leading-tight">{disease.name}</h3>
-            <p className="text-[11px] text-textMuted mt-0.5 font-mono">
-              Incubation: {disease.incubation_period_days}d
-            </p>
-          </div>
+    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="h-[160px] skeleton" />
+      <div className="p-4 space-y-3">
+        <div className="h-5 w-2/3 skeleton rounded" />
+        <div className="h-4 w-1/2 skeleton rounded" />
+        <div className="grid grid-cols-4 gap-2 mt-4">
+          {[1,2,3,4].map(i => <div key={i} className="h-8 skeleton rounded" />)}
         </div>
-        <span className={`text-xs font-bold font-mono px-2 py-1 rounded-md border ${r0Color} shrink-0`}>
-          R₀ {disease.r0.toFixed(1)}
-        </span>
-      </div>
-
-      <p className="text-xs text-textSecondary leading-relaxed line-clamp-2 mb-4">
-        {disease.description}
-      </p>
-
-      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border/50">
-        {[
-          { label: 'Mortality', value: `${(disease.mortality_rate * 100).toFixed(1)}%` },
-          { label: 'Recovery', value: `${disease.recovery_period_days}d` },
-          { label: 'Population', value: disease.population >= 1e6
-              ? `${(disease.population / 1e6).toFixed(1)}M`
-              : `${(disease.population / 1e3).toFixed(0)}K` },
-        ].map(({ label, value }) => (
-          <div key={label} className="text-center">
-            <p className="text-xs font-bold text-white">{value}</p>
-            <p className="text-[10px] text-textMuted mt-0.5 font-mono">{label}</p>
-          </div>
-        ))}
+        <div className="h-12 skeleton rounded-lg" />
+        <div className="h-9 skeleton rounded-lg" />
       </div>
     </div>
   );
 }
 
 export default function DiseasesPage() {
-  const [diseases, setDiseases] = useState<Disease[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { diseases, fetchDiseases, isLoading, error } = useDiseaseStore();
   const [query, setQuery] = useState('');
+  const [pathogenFilter, setPathogenFilter] = useState<string>('All');
+  const [severityFilter, setSeverityFilter] = useState<string>('All');
 
   useEffect(() => {
-    api.getDiseases()
-      .then((res) => setDiseases(res.data as Disease[]))
-      .catch(() => setError('Failed to load disease database.'))
-      .finally(() => setLoading(false));
-  }, []);
+    fetchDiseases();
+  }, [fetchDiseases]);
 
-  const filtered = diseases.filter((d) =>
-    d.name.toLowerCase().includes(query.toLowerCase()) ||
-    d.description.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = diseases.filter((d) => {
+    const matchesQuery =
+      d.name.toLowerCase().includes(query.toLowerCase()) ||
+      (d.article?.abstract ?? '').toLowerCase().includes(query.toLowerCase());
+    const matchesPathogen =
+      pathogenFilter === 'All' ||
+      d.pathogenType?.toLowerCase() === pathogenFilter.toLowerCase();
+    const matchesSeverity =
+      severityFilter === 'All' ||
+      d.severity?.toLowerCase() === severityFilter.toLowerCase();
+    return matchesQuery && matchesPathogen && matchesSeverity;
+  });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="max-w-[1400px] mx-auto pb-16 space-y-8">
+
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <Database className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold text-white">Disease Database</h2>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-action-primary/10 border border-action-primary/20 flex items-center justify-center text-action-primary">
+            <Database className="w-5 h-5" />
           </div>
-          <p className="text-textSecondary text-sm mt-0.5">
-            {diseases.length} pathogen profiles available.
-          </p>
+          <div>
+            <h2 className="text-heading-xl font-bold text-textPrimary">Disease Database</h2>
+            <p className="text-body-sm text-textSecondary">
+              {isLoading ? 'Loading…' : `${filtered.length} pathogen profile${filtered.length !== 1 ? 's' : ''}`}
+            </p>
+          </div>
         </div>
 
-        {/* Search */}
-        <div className="relative w-64">
+        {/* Search input */}
+        <div className="relative w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted pointer-events-none" />
           <input
             type="text"
-            placeholder="Search diseases..."
+            placeholder="Search diseases…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-surface border border-border pl-9 pr-4 py-2.5 rounded-lg text-sm text-white placeholder-textMuted focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,209,255,0.08)] transition-all"
+            className="w-full bg-surface border border-border rounded-full py-2 pl-10 pr-4 text-body-sm text-textPrimary placeholder:text-textMuted focus:outline-none focus:border-action-primary focus:ring-1 focus:ring-action-primary transition-all"
           />
         </div>
       </div>
 
-      {/* Content */}
-      {loading && (
-        <div className="flex items-center justify-center h-64 gap-3 text-textSecondary">
-          <Loader2 className="w-5 h-5 animate-spin text-primary" />
-          <span className="font-mono text-sm">Loading pathogen data...</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="flex items-center gap-3 bg-danger/10 border border-danger/20 rounded-xl p-4 text-danger">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span className="text-sm">{error}</span>
-        </div>
-      )}
-
-      {!loading && !error && filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center h-64 gap-3 text-textMuted">
-          <Database className="w-10 h-10 opacity-40" />
-          <p className="font-mono text-sm">No diseases match your search.</p>
-        </div>
-      )}
-
-      {!loading && !error && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((d) => (
-            <DiseaseCard key={d.id} disease={d} />
+      {/* Filters */}
+      <div className="flex flex-wrap gap-6">
+        {/* Pathogen type */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-body-sm text-textMuted font-medium mr-1">Type:</span>
+          {PATHOGEN_FILTERS.map(f => (
+            <button
+              key={f}
+              onClick={() => setPathogenFilter(f)}
+              className={`px-3 py-1 rounded-full text-body-sm font-medium transition-all ${
+                pathogenFilter === f
+                  ? 'bg-action-primary text-white'
+                  : 'bg-raised border border-border text-textSecondary hover:text-textPrimary'
+              }`}
+            >
+              {f}
+            </button>
           ))}
         </div>
-      )}
+
+        {/* Severity */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-body-sm text-textMuted font-medium mr-1">Severity:</span>
+          {SEVERITY_FILTERS.map(f => {
+            const colors: Record<string, string> = {
+              Critical: 'bg-sir-infected text-white',
+              High:     'bg-action-warning text-white',
+              Moderate: 'bg-sir-susceptible text-void',
+              Low:      'bg-sir-recovered text-void',
+            };
+            return (
+              <button
+                key={f}
+                onClick={() => setSeverityFilter(f)}
+                className={`px-3 py-1 rounded-full text-body-sm font-medium transition-all ${
+                  severityFilter === f
+                    ? (colors[f] ?? 'bg-action-primary text-white')
+                    : 'bg-raised border border-border text-textSecondary hover:text-textPrimary'
+                }`}
+              >
+                {f}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Content */}
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+          >
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+          </motion.div>
+        ) : error ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-20 text-center"
+          >
+            <div className="w-16 h-16 bg-raised rounded-2xl flex items-center justify-center mb-4 border border-border">
+              <ServerCrash className="w-8 h-8 text-textMuted" />
+            </div>
+            <h3 className="text-heading-md font-semibold text-textPrimary mb-2">Failed to load database</h3>
+            <p className="text-body-md text-textSecondary mb-6 max-w-sm">{error}</p>
+            <button
+              onClick={fetchDiseases}
+              className="flex items-center gap-2 px-5 py-2.5 bg-action-primary/10 hover:bg-action-primary/20 text-action-primary border border-action-primary/30 rounded-lg text-body-sm font-semibold transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" /> Retry
+            </button>
+          </motion.div>
+        ) : filtered.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-20 text-center"
+          >
+            <Database className="w-12 h-12 text-textMuted opacity-30 mb-4" />
+            <p className="text-body-md text-textMuted">No diseases match your current filters.</p>
+            <button
+              onClick={() => { setQuery(''); setPathogenFilter('All'); setSeverityFilter('All'); }}
+              className="mt-4 text-body-sm text-action-primary hover:underline"
+            >
+              Clear filters
+            </button>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="grid"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+          >
+            {filtered.map((disease, i) => (
+              <motion.div
+                key={disease.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.3 }}
+              >
+                <DiseaseCard disease={disease} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

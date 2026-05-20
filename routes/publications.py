@@ -4,6 +4,15 @@ from services.pdf_service import extract_text_from_pdf
 
 router = APIRouter()
 
+@router.get("/")
+async def get_publications():
+    # Simulating a database fetch for user's submission history
+    return [
+        { "id": 1, "title": "Variant Mutation Analysis", "disease": "COVID-19", "status": "Approved", "date": "Oct 24, 2025" },
+        { "id": 2, "title": "Vector Transmission Rates", "disease": "Malaria", "status": "Pending AI Parse", "date": "Oct 23, 2025" },
+        { "id": 3, "title": "Zoonotic Spillover Patterns", "disease": "Ebola", "status": "Rejected", "date": "Oct 21, 2025" },
+    ]
+
 @router.post("/upload")
 async def upload_research(
     disease_id: str = Form(...),
