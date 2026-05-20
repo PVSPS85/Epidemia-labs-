@@ -45,16 +45,23 @@ export default function ChatbotWidget() {
       });
       const data = await res.json();
       
+      let answerText: string;
+      if (!res.ok) {
+        answerText = `⚠️ ${data.error || 'Server error. Please try again.'}`;
+      } else {
+        answerText = data.answer || "I couldn't generate a response. Please try rephrasing your question.";
+      }
+
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.answer || "I'm sorry, I couldn't process that request.",
+        content: answerText,
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { id: Date.now().toString(), role: 'assistant', content: '⚠️ Error connecting to AI. Please ensure your Gemini API key is configured.' },
+        { id: Date.now().toString(), role: 'assistant', content: '⚠️ Could not connect to AI service. Please check that the server is running and the Gemini API key is configured.' },
       ]);
     } finally {
       setLoading(false);

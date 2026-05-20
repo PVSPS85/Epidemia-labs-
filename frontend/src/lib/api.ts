@@ -14,7 +14,7 @@ const getBaseUrl = () => {
 export const apiClient = axios.create({
   baseURL: getBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+  timeout: 15000,
 });
 
 // Attach auth token + refresh dynamic base URL
@@ -43,26 +43,33 @@ apiClient.interceptors.response.use(
 );
 
 export const api = {
+  // Auth
+  login: (email: string, password: string) =>
+    apiClient.post('/auth/login', { email, password }),
+  signup: (email: string, password: string, role: string = 'Viewer') =>
+    apiClient.post('/auth/signup', { email, password, role }),
+
   // Diseases
-  getDiseases:     ()         => apiClient.get('/diseases'),
+  getDiseases:     ()           => apiClient.get('/diseases/'),
   getDiseaseById:  (id: string) => apiClient.get(`/diseases/${id}`),
 
-  // Simulation
-  runSimulation: (data: { beta: number; gamma: number; N: number; I0: number; days: number }) =>
-    apiClient.post('/simulate', data),
+  // Simulation — backend expects { population, r0, days }
+  runSimulation: (data: { population: number; r0: number; days: number }) =>
+    apiClient.post('/simulate/run', data),
 
-  // Publications — FormData for file upload
-  getPublications:     ()          => apiClient.get('/publications'),
+  // Publications
+  getPublications:     ()          => apiClient.get('/publications/'),
   getPublicationById:  (id: string) => apiClient.get(`/publications/${id}`),
   uploadPublication:   (data: FormData) =>
     apiClient.post('/publications/upload', data, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
 
-  // Analytics
-  getAnalytics: () => apiClient.get('/analytics'),
-
-  // AI Chatbot
+  // AI Chatbot — backend expects POST to /api/chat/
   chatWithAI: (question: string, context = '') =>
-    apiClient.post('/chat', { question, context }),
+    apiClient.post('/api/chat/', { question, context }),
+
+  // Map
+  getHeatmap: (diseaseName: string, day: number = 0) =>
+    apiClient.get(`/map/heatmap/${encodeURIComponent(diseaseName)}?day=${day}`),
 };

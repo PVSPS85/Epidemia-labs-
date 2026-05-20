@@ -257,6 +257,89 @@ export default function DiseaseDetailPage() {
               </ol>
             </div>
           )}
+
+          {/* ── LIVE MAP — Geographic Spread ── */}
+          <div className="bg-surface border border-border rounded-2xl p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <MapPin className="w-5 h-5 text-action-primary" />
+              <h3 className="text-heading-md font-semibold">Geographic Spread</h3>
+              <span className="relative flex items-center gap-1.5 ml-auto">
+                <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-sir-infected opacity-60" />
+                <span className="relative w-2 h-2 rounded-full bg-sir-infected" />
+                <span className="text-[10px] font-semibold text-sir-infected uppercase tracking-wider">Live</span>
+              </span>
+            </div>
+
+            {/* Map visualization using CSS grid for hotspot positions */}
+            <div className="relative h-[300px] bg-raised rounded-xl border border-border overflow-hidden">
+              {/* Dark world map background gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-void via-base to-overlay" />
+
+              {/* World map outline SVG - simplified */}
+              <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full opacity-[0.08]" preserveAspectRatio="xMidYMid meet">
+                <path d="M150,120 Q200,100 250,110 Q300,90 350,100 Q380,80 420,90 L450,85 Q480,100 500,95 L530,100 Q560,90 580,100 Q620,80 660,95 Q700,90 730,100 Q760,85 780,95 L800,100 Q830,110 850,105" stroke="#3B82F6" fill="none" strokeWidth="1.5"/>
+                <path d="M200,180 Q250,170 300,175 Q350,160 400,170 Q430,180 460,175 Q500,185 540,180 Q580,170 620,175 Q660,185 700,180 Q740,170 780,175" stroke="#3B82F6" fill="none" strokeWidth="1"/>
+                <path d="M250,250 Q300,240 350,245 Q400,260 450,250 Q500,240 550,248 Q600,260 650,250" stroke="#3B82F6" fill="none" strokeWidth="1"/>
+                <path d="M350,320 Q400,310 450,315 Q500,330 550,320 Q580,310 610,320" stroke="#3B82F6" fill="none" strokeWidth="0.8"/>
+              </svg>
+
+              {/* Hotspot markers */}
+              {(d.hotspots || []).map((hotspot, i) => {
+                // Convert lat/lng to approximate position percentages
+                const x = ((hotspot.lng + 180) / 360) * 100;
+                const y = ((90 - hotspot.lat) / 180) * 100;
+                return (
+                  <div
+                    key={i}
+                    className="absolute group"
+                    style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
+                  >
+                    {/* Pulse animation */}
+                    <span
+                      className="absolute w-6 h-6 rounded-full bg-sir-infected/30 animate-ping"
+                      style={{ animationDelay: `${i * 0.3}s`, animationDuration: '2s' }}
+                    />
+                    {/* Core dot */}
+                    <span
+                      className="relative block w-3 h-3 rounded-full bg-sir-infected border border-sir-infected/60 shadow-glow-red"
+                      style={{ opacity: 0.5 + hotspot.intensity * 0.5 }}
+                    />
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-overlay border border-border rounded-lg text-[10px] font-mono text-textPrimary whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg z-10">
+                      {hotspot.label} — {(hotspot.intensity * 100).toFixed(0)}% intensity
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Empty state if no hotspots */}
+              {(!d.hotspots || d.hotspots.length === 0) && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-body-sm text-textMuted">No geographic data available</p>
+                </div>
+              )}
+            </div>
+
+            {/* Affected countries legend */}
+            {d.affectedCountries && d.affectedCountries.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {d.affectedCountries.map((country) => (
+                  <span
+                    key={country.iso}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-raised border border-border rounded-lg text-[11px] font-mono"
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      country.severity === 'critical' ? 'bg-sir-infected' :
+                      country.severity === 'high' ? 'bg-sir-susceptible' : 'bg-action-primary'
+                    }`} />
+                    <span className="text-textSecondary">{country.iso}</span>
+                    <span className="text-textMuted">
+                      {country.cases >= 1_000_000 ? `${(country.cases / 1_000_000).toFixed(1)}M` : `${(country.cases / 1_000).toFixed(0)}K`}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            )}
         </div>
 
         {/* RIGHT: Sticky stat panel (35%) */}

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import {
   Home, Stethoscope, Map as MapIcon, BarChart2,
@@ -63,6 +63,12 @@ function NavSection({ label, items }: { label: string; items: any[] }) {
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
   return (
     <aside className="fixed left-0 top-0 w-[240px] h-screen bg-base border-r border-border flex flex-col z-50">
@@ -118,7 +124,7 @@ export default function Sidebar() {
 
           {/* Logout */}
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="p-1.5 text-textMuted hover:text-action-danger transition-colors rounded-md hover:bg-raised"
             title="Log out"
           >

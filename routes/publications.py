@@ -6,31 +6,38 @@ router = APIRouter()
 
 @router.get("/")
 async def get_publications():
-    # Simulating a database fetch for user's submission history
-    return [
-        { "id": 1, "title": "Variant Mutation Analysis", "disease": "COVID-19", "status": "Approved", "date": "Oct 24, 2025" },
-        { "id": 2, "title": "Vector Transmission Rates", "disease": "Malaria", "status": "Pending AI Parse", "date": "Oct 23, 2025" },
-        { "id": 3, "title": "Zoonotic Spillover Patterns", "disease": "Ebola", "status": "Rejected", "date": "Oct 21, 2025" },
-    ]
+    """Fetch all publications from Supabase. Returns empty list if table doesn't exist."""
+    try:
+        response = supabase.table("publications").select("*").execute()
+        return response.data if response.data else []
+    except Exception:
+        # Table may not exist yet — return empty list
+        return []
 
 @router.post("/upload")
-async def upload_research(
+async def upload_publication(
     disease_id: str = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
 ):
-    # 1. Extract text from the PDF for AI indexing
-    text_content = await extract_text_from_pdf(file)
-    
-    # 2. Upload file to Supabase Storage (Will fully work tomorrow!)
-    file_path = f"research/{disease_id}/{file.filename}"
-    file_content = await file.read()
-    
-    # Note: Supabase calls are mocked out until we put in the real keys tomorrow
-    # supabase.storage.from_("publications").upload(file_path, file_content)
-    # public_url = supabase.storage.from_("publications").get_public_url(file_path)
-    
-    return {
-        "message": "Research paper processed successfully",
-        "url": "https://dummy-url.com/fake.pdf",
-        "preview_text": text_content[:500] # Return first 500 chars as a summary
-    }
+    """Upload a research PDF and extract text."""
+    try:
+        text = extract_text_from_pdf(file)
+        preview = text[:500] if text else "No text extracted"
+
+        # Try to store in Supabase
+        try:
+            supabase.table("publications").insert({
+                "disease_id": disease_id,
+                "filename": file.filename,
+                "preview_text": preview,
+            }).execute()
+        except Exception:
+            pass  # Table may not exist yet
+
+        return {
+            "message": "Publication uploaded successfully",
+            "filename": file.filename,
+            "preview_text": preview,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

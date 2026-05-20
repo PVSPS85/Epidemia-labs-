@@ -41,12 +41,24 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   setParams: (params) => set((state) => ({ ...state, ...params })),
 
   runSimulation: async () => {
-    const { beta, gamma, N, I0, days } = get();
+    const { beta, gamma, N, days } = get();
     set({ isLoading: true, error: null });
     try {
-      const response = await api.runSimulation({ beta, gamma, N, I0, days });
-      // The API should return an array of SIRDataPoint: { day, S, I, R }
-      set({ results: response.data, isLoading: false });
+      // Backend expects { population, r0, days }
+      // Convert beta/gamma back to r0 for the backend
+      const r0 = gamma > 0 ? beta / gamma : 2.5;
+      const response = await api.runSimulation({ population: N, r0, days });
+
+      // Backend returns { day, susceptible, infected, recovered }
+      // Frontend expects { day, S, I, R }
+      const mapped: SIRDataPoint[] = (response.data || []).map((pt: any) => ({
+        day: pt.day,
+        S: pt.susceptible,
+        I: pt.infected,
+        R: pt.recovered,
+      }));
+
+      set({ results: mapped, isLoading: false });
     } catch (err: any) {
       set({ error: err.message || 'Failed to run simulation', isLoading: false });
     }
