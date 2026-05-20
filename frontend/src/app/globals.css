@@ -1,5 +1,6 @@
 /* ──────────────────────────────────────────────────────────────────────────
-   Epidemia-Labs — Global Stylesheet v2
+   Epidemia-Labs — Global Stylesheet v3 (Premium Dark Mode)
+   Font: Poppins + JetBrains Mono
 ────────────────────────────────────────────────────────────────────────── */
 
 @tailwind base;
@@ -8,6 +9,7 @@
 
 @layer base {
   :root {
+    /* Background Layers */
     --bg-void:        #050508;
     --bg-base:        #0A0A0F;
     --bg-surface:     #0F0F1A;
@@ -15,21 +17,25 @@
     --bg-overlay:     #1A1A2E;
     --bg-border:      #1E1E30;
 
+    /* Semantic SIR Colors */
     --sir-susceptible: #F59E0B;
     --sir-infected:    #EF4444;
     --sir-recovered:   #10B981;
 
+    /* UI Action Colors */
     --action-primary:      #3B82F6;
     --action-primary-glow: rgba(59,130,246,0.25);
     --action-danger:       #EF4444;
     --action-success:      #10B981;
     --action-warning:      #F59E0B;
 
+    /* Text Hierarchy */
     --text-primary:    #F8FAFC;
     --text-secondary:  #94A3B8;
     --text-muted:      #475569;
     --text-accent:     #3B82F6;
 
+    /* Glow / Shadow Tokens */
     --glow-red:    0 0 20px rgba(239,68,68,0.4);
     --glow-yellow: 0 0 20px rgba(245,158,11,0.4);
     --glow-green:  0 0 20px rgba(16,185,129,0.4);
@@ -51,6 +57,7 @@
   body {
     background-color: var(--bg-void);
     color: var(--text-primary);
+    font-family: var(--font-poppins), ui-sans-serif, sans-serif;
   }
 
   :focus-visible {
@@ -60,26 +67,46 @@
 }
 
 @layer utilities {
+  /* Subtle grid background for auth pages */
   .bg-grid {
-    background-image: 
+    background-image:
       linear-gradient(rgba(30, 30, 48, 0.4) 1px, transparent 1px),
       linear-gradient(90deg, rgba(30, 30, 48, 0.4) 1px, transparent 1px);
     background-size: 32px 32px;
   }
+
+  /* Shimmer skeleton animation */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--bg-raised) 25%,
+      var(--bg-overlay) 50%,
+      var(--bg-raised) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Hide scrollbar but keep scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Glass morphism card */
+  .glass {
+    background: rgba(15, 15, 26, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--bg-border);
+  }
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-void);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--bg-border);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
+/* ── Custom scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--bg-void); }
+::-webkit-scrollbar-thumb  { background: var(--bg-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }

@@ -4,180 +4,265 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, Activity, Shield, Map as MapIcon, BarChart2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, User } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
-  const router = useRouter();
+/* ── Animated Network SVG Background ─────────────────────────────────────── */
+const NODES = [
+  { cx: 200, cy: 200 }, { cx: 80,  cy: 100 }, { cx: 320, cy: 80  },
+  { cx: 350, cy: 280 }, { cx: 60,  cy: 300 }, { cx: 220, cy: 340 },
+  { cx: 140, cy: 220 }, { cx: 280, cy: 160 },
+];
+const EDGES = [
+  [0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[1,6],[2,7],[3,5],[4,6],
+];
+
+function AnimatedNetwork() {
+  return (
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 160, repeat: Infinity, ease: 'linear' }}
+      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+    >
+      <svg viewBox="0 0 400 400" className="w-[700px] h-[700px] opacity-[0.06]">
+        {EDGES.map(([a, b], i) => (
+          <line
+            key={i}
+            x1={NODES[a].cx} y1={NODES[a].cy}
+            x2={NODES[b].cx} y2={NODES[b].cy}
+            stroke="#3B82F6" strokeWidth="1"
+          />
+        ))}
+        {NODES.map((n, i) => (
+          <g key={i}>
+            <circle cx={n.cx} cy={n.cy} r={i === 0 ? 14 : 7}
+              fill={i === 0 ? '#3B82F6' : 'none'}
+              stroke={i === 0 ? '#3B82F6' : '#94A3B8'}
+              strokeWidth="1.5" opacity={i === 0 ? 0.9 : 0.6}
+            />
+          </g>
+        ))}
+      </svg>
+    </motion.div>
+  );
+}
+
+/* ── Left Brand Panel ─────────────────────────────────────────────────────── */
+function BrandPanel() {
+  const avatars = [
+    'https://i.pravatar.cc/40?img=1',
+    'https://i.pravatar.cc/40?img=2',
+    'https://i.pravatar.cc/40?img=3',
+    'https://i.pravatar.cc/40?img=4',
+    'https://i.pravatar.cc/40?img=5',
+  ];
 
   return (
-    <div className="flex flex-col lg:flex-row w-screen h-screen overflow-hidden bg-void text-textPrimary">
-      {/* LEFT PANEL: BrandPanel */}
-      <div className="hidden lg:flex w-[45%] flex-col justify-between p-12 bg-base relative overflow-hidden border-r border-border">
-        {/* Animated Network Graph Background */}
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 z-0 opacity-10 flex items-center justify-center pointer-events-none"
-        >
-          <svg viewBox="0 0 400 400" className="w-[800px] h-[800px]">
-            <circle cx="200" cy="200" r="180" fill="none" stroke="#3B82F6" strokeWidth="1" strokeDasharray="4 8" />
-            <circle cx="200" cy="200" r="120" fill="none" stroke="#A855F7" strokeWidth="1" strokeDasharray="4 8" />
-            <path d="M200 20 L200 380 M20 200 L380 200 M70 70 L330 330 M70 330 L330 70" stroke="#3B82F6" strokeWidth="1" opacity="0.5" />
-          </svg>
-        </motion.div>
+    <div className="hidden lg:flex w-[45%] flex-col justify-between p-12 bg-base relative overflow-hidden border-r border-border">
+      <AnimatedNetwork />
 
-        <div className="relative z-10">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-16">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-action-primary/20 border border-action-primary/40 text-action-primary font-bold shadow-glow-blue">
-              E
-            </div>
-            <span className="text-2xl font-bold tracking-tight">Epidemia-Labs</span>
+      {/* Grid background */}
+      <div className="absolute inset-0 bg-grid opacity-40" />
+
+      <div className="relative z-10">
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-16">
+          <div className="w-10 h-10 rounded-xl bg-action-primary/20 border border-action-primary/40 flex items-center justify-center text-action-primary font-bold text-lg shadow-glow-blue">
+            E
           </div>
-
-          <div className="space-y-6 max-w-md">
-            <h1 className="text-display-lg leading-tight font-bold">
-              Track. Simulate. Publish. <span className="text-action-primary">Respond.</span>
-            </h1>
-            <p className="text-body-lg text-textSecondary leading-relaxed">
-              Professional-grade epidemiological research platform for real-time disease tracking, SIR simulation modeling, and global outbreak analytics.
-            </p>
-
-            {/* Feature Pills */}
-            <div className="flex flex-wrap gap-3 mt-8">
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-surface border border-border">
-                <Shield className="w-4 h-4 text-action-primary" /> 🔬 Peer-reviewed
-              </span>
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-surface border border-border">
-                <MapIcon className="w-4 h-4 text-action-success" /> 🌍 Live Maps
-              </span>
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-surface border border-border">
-                <BarChart2 className="w-4 h-4 text-action-warning" /> 📊 SIR Sims
-              </span>
-            </div>
-          </div>
+          <span className="text-2xl font-bold tracking-tight">
+            Epidemia<span className="text-action-primary">-Labs</span>
+          </span>
         </div>
 
+        <div className="space-y-6 max-w-md">
+          <h1 className="text-display-lg leading-tight font-bold">
+            Track. Simulate.<br />
+            Publish.{' '}
+            <span className="text-action-primary">Respond.</span>
+          </h1>
+          <p className="text-body-lg text-textSecondary leading-relaxed">
+            Professional-grade epidemiological research platform for real-time disease tracking, SIR simulation modeling, and global outbreak analytics.
+          </p>
 
+          {/* Feature pills */}
+          <div className="flex flex-wrap gap-3 mt-6">
+            {[
+              { emoji: '🔬', label: 'Peer-reviewed' },
+              { emoji: '🌍', label: 'Live Maps' },
+              { emoji: '📊', label: 'SIR Sims' },
+            ].map(({ emoji, label }) => (
+              <motion.span
+                key={label}
+                whileHover={{ scale: 1.05 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-body-sm font-medium bg-surface border border-border text-textSecondary"
+              >
+                {emoji} {label}
+              </motion.span>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* RIGHT PANEL: AuthCard */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 bg-void relative">
-        <div className="w-full max-w-[460px] bg-surface rounded-[24px] border border-border p-10 shadow-card">
-          
-          {/* Mobile Logo */}
-          <div className="flex lg:hidden items-center gap-3 mb-8">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-action-primary/20 border border-action-primary/40 text-action-primary font-bold shadow-glow-blue">
-              E
-            </div>
-            <span className="text-xl font-bold tracking-tight">Epidemia-Labs</span>
-          </div>
-
-          <div className="flex items-center bg-base rounded-lg p-1 mb-8 border border-border">
-            <button
-              onClick={() => setActiveTab('login')}
-              className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${activeTab === 'login' ? 'bg-surface text-textPrimary shadow-sm' : 'text-textSecondary hover:text-textPrimary'}`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => setActiveTab('signup')}
-              className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${activeTab === 'signup' ? 'bg-surface text-textPrimary shadow-sm' : 'text-textSecondary hover:text-textPrimary'}`}
-            >
-              Create Account
-            </button>
-          </div>
-
-          <div className="relative">
-            <AnimatePresence mode="wait">
-              {activeTab === 'login' ? (
-                <motion.div
-                  key="login"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <LoginForm />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="signup"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <SignupForm />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
+      {/* Trust footer */}
+      <div className="relative z-10 flex items-center gap-4">
+        {/* Avatar stack */}
+        <div className="flex -space-x-2.5">
+          {avatars.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              alt=""
+              className="w-8 h-8 rounded-full border-2 border-base object-cover"
+            />
+          ))}
+        </div>
+        <div>
+          <p className="text-body-sm font-semibold text-textPrimary">
+            Trusted by 2,400+ epidemiologists
+          </p>
+          <p className="text-[11px] text-textMuted">Across 120+ countries &bull; WHO affiliated</p>
         </div>
       </div>
     </div>
   );
 }
 
+/* ── Auth Card ────────────────────────────────────────────────────────────── */
+export default function AuthPage() {
+  const [tab, setTab] = useState<'login' | 'signup'>('login');
+
+  return (
+    <div className="flex flex-col lg:flex-row w-screen h-screen overflow-hidden bg-void text-textPrimary">
+      <BrandPanel />
+
+      {/* Right: Auth Card */}
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 bg-void relative">
+        {/* Ambient glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-action-primary/5 rounded-full blur-[80px] pointer-events-none" />
+
+        <div className="relative w-full max-w-[460px] bg-surface border border-border rounded-2xl p-10 shadow-card">
+          {/* Mobile logo */}
+          <div className="flex lg:hidden items-center gap-3 mb-8">
+            <div className="w-8 h-8 rounded-lg bg-action-primary/20 border border-action-primary/40 flex items-center justify-center text-action-primary font-bold shadow-glow-blue">
+              E
+            </div>
+            <span className="text-xl font-bold tracking-tight">
+              Epidemia<span className="text-action-primary">-Labs</span>
+            </span>
+          </div>
+
+          {/* Tab switcher */}
+          <div className="flex items-center bg-base rounded-lg p-1 mb-8 border border-border">
+            {(['login', 'signup'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`flex-1 py-2 text-body-sm font-semibold rounded-md transition-all relative ${
+                  tab === t
+                    ? 'bg-surface text-textPrimary'
+                    : 'text-textSecondary hover:text-textPrimary'
+                }`}
+              >
+                {t === 'login' ? 'Sign In' : 'Create Account'}
+              </button>
+            ))}
+          </div>
+
+          <AnimatePresence mode="wait">
+            {tab === 'login' ? (
+              <motion.div key="login" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 16 }} transition={{ duration: 0.2 }}>
+                <LoginForm />
+              </motion.div>
+            ) : (
+              <motion.div key="signup" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }}>
+                <SignupForm />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Input wrapper ────────────────────────────────────────────────────────── */
+const inputBase =
+  'w-full bg-base border border-border rounded-lg py-2.5 pl-10 pr-4 text-body-sm text-textPrimary placeholder:text-textMuted focus:outline-none focus:border-action-primary focus:ring-1 focus:ring-action-primary transition-all';
+
+function GoogleButton({ onClick, loading }: { onClick: () => void; loading: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      className="w-full h-12 bg-base border border-border hover:bg-raised text-textPrimary font-medium rounded-lg transition-colors flex items-center justify-center gap-3 disabled:opacity-50 text-body-sm"
+    >
+      <svg viewBox="0 0 24 24" className="w-4 h-4" aria-hidden>
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+  );
+}
+
+function Divider() {
+  return (
+    <div className="relative flex items-center py-4">
+      <div className="flex-grow border-t border-border" />
+      <span className="flex-shrink-0 mx-4 text-[11px] text-textMuted uppercase tracking-widest">or</span>
+      <div className="flex-grow border-t border-border" />
+    </div>
+  );
+}
+
+/* ── Login Form ───────────────────────────────────────────────────────────── */
 function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm();
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { register, handleSubmit, formState: { errors } } = useForm<{ email: string; password: string }>();
   const router = useRouter();
   const { setAuth } = useAuthStore();
 
-  const handleGoogleAuth = async () => {
-    setIsLoading(true);
+  const mockLogin = async (data: { email: string; password: string }) => {
+    setLoading(true);
     await new Promise(r => setTimeout(r, 800));
     setAuth({
-      id: '3',
-      email: 'researcher@gmail.com',
-      name: 'Google User',
-      role: 'viewer',
-      avatar: 'https://i.pravatar.cc/150?u=3',
-      savedDiseases: []
+      id: '1', email: data.email, name: 'Dr. Jane Smith',
+      role: 'viewer', avatar: 'https://i.pravatar.cc/150?img=47', savedDiseases: [],
     }, 'mock_token');
-    toast.success('Successfully logged in with Google');
+    toast.success('Welcome back!');
     router.push('/dashboard');
   };
 
-  const onSubmit = async (data: any) => {
-    setIsLoading(true);
-    // 800ms mock delay
+  const googleLogin = async () => {
+    setLoading(true);
     await new Promise(r => setTimeout(r, 800));
-    
-    // Set Zustand store mock user
     setAuth({
-      id: '1',
-      email: data.email,
-      name: 'Dr. Jane Smith',
-      role: 'viewer',
-      avatar: 'https://i.pravatar.cc/150?u=1',
-      savedDiseases: []
+      id: '2', email: 'user@gmail.com', name: 'Researcher',
+      role: 'viewer', avatar: 'https://i.pravatar.cc/150?img=32', savedDiseases: [],
     }, 'mock_token');
-    
-    toast.success('Successfully logged in');
+    toast.success('Signed in with Google');
     router.push('/dashboard');
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit(mockLogin)} className="space-y-5">
       <div>
         <label className="block text-body-sm font-medium text-textSecondary mb-1.5">Email Address</label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
           <input
-            {...register("email", { required: true, pattern: /^\S+@\S+$/i })}
-            type="email"
-            placeholder="researcher@epidemia.org"
-            className="w-full bg-base border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-action-primary focus:ring-1 focus:ring-action-primary transition-all"
+            {...register('email', { required: true, pattern: /^\S+@\S+$/i })}
+            type="email" placeholder="researcher@epidemia.org"
+            className={inputBase}
           />
         </div>
-        {errors.email && <span className="text-xs text-action-danger mt-1">Valid email is required</span>}
+        {errors.email && <p className="text-[11px] text-sir-infected mt-1">Valid email required</p>}
       </div>
 
       <div>
@@ -185,90 +270,71 @@ function LoginForm() {
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
           <input
-            {...register("password", { required: true, minLength: 6 })}
-            type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
-            className="w-full bg-base border border-border rounded-lg py-2.5 pl-10 pr-10 text-sm focus:outline-none focus:border-action-primary focus:ring-1 focus:ring-action-primary transition-all"
+            {...register('password', { required: true, minLength: 6 })}
+            type={showPw ? 'text' : 'password'} placeholder="••••••••"
+            className={inputBase}
           />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-textMuted hover:text-textPrimary">
-            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-textMuted hover:text-textPrimary transition-colors">
+            {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
-        {errors.password && <span className="text-xs text-action-danger mt-1">Password must be at least 6 characters</span>}
+        {errors.password && <p className="text-[11px] text-sir-infected mt-1">Password must be ≥6 characters</p>}
       </div>
 
       <div className="flex items-center justify-between text-body-sm">
-        <label className="flex items-center gap-2 cursor-pointer text-textSecondary hover:text-textPrimary">
+        <label className="flex items-center gap-2 text-textSecondary cursor-pointer">
           <input type="checkbox" className="rounded border-border bg-base text-action-primary focus:ring-action-primary" />
           Remember me
         </label>
-        <a href="#" onClick={(e) => { e.preventDefault(); toast.info('Password reset instructions sent to your email.'); }} className="text-action-primary hover:text-blue-400 font-medium">Forgot password?</a>
+        <button type="button" onClick={() => toast.info('Password reset email sent!')} className="text-action-primary hover:text-blue-400 font-medium transition-colors">
+          Forgot password?
+        </button>
       </div>
 
       <button
         type="submit"
-        disabled={isLoading}
-        className="w-full h-12 bg-action-primary hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-glow-blue flex items-center justify-center"
+        disabled={loading}
+        className="w-full h-12 bg-action-primary hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-glow-blue flex items-center justify-center gap-2 disabled:opacity-70"
       >
-        {isLoading ? <Activity className="w-5 h-5 animate-spin" /> : 'Sign In'}
+        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
       </button>
 
-      <div className="relative flex items-center py-4">
-        <div className="flex-grow border-t border-border"></div>
-        <span className="flex-shrink-0 mx-4 text-xs text-textMuted uppercase tracking-wider">or continue with</span>
-        <div className="flex-grow border-t border-border"></div>
-      </div>
-
-      <button type="button" onClick={handleGoogleAuth} disabled={isLoading} className="w-full h-12 bg-base border border-border hover:bg-surface text-textPrimary font-medium rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
-        <svg viewBox="0 0 24 24" className="w-5 h-5"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        Google OAuth
-      </button>
+      <Divider />
+      <GoogleButton onClick={googleLogin} loading={loading} />
     </form>
   );
 }
 
+/* ── Signup Form ──────────────────────────────────────────────────────────── */
 function SignupForm() {
+  const [loading, setLoading] = useState(false);
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
-    defaultValues: { role: 'viewer', name: '', email: '', password: '', confirmPassword: '' }
+    defaultValues: { name: '', email: '', password: '', confirmPassword: '', role: 'viewer' as 'viewer' | 'publisher' },
   });
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { setAuth } = useAuthStore();
-  const selectedRole = watch('role');
+  const role = watch('role');
 
-  const handleGoogleAuth = async () => {
-    setIsLoading(true);
+  const onSubmit = async (data: any) => {
+    if (data.password !== data.confirmPassword) { toast.error('Passwords do not match'); return; }
+    setLoading(true);
     await new Promise(r => setTimeout(r, 800));
     setAuth({
-      id: '4',
-      email: 'publisher@gmail.com',
-      name: 'Google Publisher',
-      role: selectedRole || 'viewer',
-      avatar: 'https://i.pravatar.cc/150?u=4',
-      savedDiseases: []
+      id: '3', email: data.email, name: data.name,
+      role: data.role, avatar: 'https://i.pravatar.cc/150?img=60', savedDiseases: [],
     }, 'mock_token');
-    toast.success('Google account linked successfully');
+    toast.success('Account created! Welcome to Epidemia-Labs.');
     router.push('/dashboard');
   };
 
-  const onSubmit = async (data: any) => {
-    if (data.password !== data.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-    setIsLoading(true);
+  const googleSignup = async () => {
+    setLoading(true);
     await new Promise(r => setTimeout(r, 800));
-    
     setAuth({
-      id: '2',
-      email: data.email,
-      name: data.name,
-      role: data.role,
-      avatar: 'https://i.pravatar.cc/150?u=2',
-      savedDiseases: []
+      id: '4', email: 'user@gmail.com', name: 'Google User',
+      role, avatar: 'https://i.pravatar.cc/150?img=33', savedDiseases: [],
     }, 'mock_token');
-    
-    toast.success('Account created successfully');
+    toast.success('Account created with Google!');
     router.push('/dashboard');
   };
 
@@ -276,84 +342,81 @@ function SignupForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <label className="block text-body-sm font-medium text-textSecondary mb-1.5">Full Name</label>
-        <input
-          {...register("name", { required: true })}
-          type="text"
-          className="w-full bg-base border border-border rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:border-action-primary focus:ring-1 focus:ring-action-primary transition-all"
-        />
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
+          <input {...register('name', { required: true })} type="text" placeholder="Dr. Jane Smith" className={inputBase} />
+        </div>
+        {errors.name && <p className="text-[11px] text-sir-infected mt-1">Name required</p>}
       </div>
 
       <div>
         <label className="block text-body-sm font-medium text-textSecondary mb-1.5">Email Address</label>
-        <input
-          {...register("email", { required: true, pattern: /^\S+@\S+$/i })}
-          type="email"
-          className="w-full bg-base border border-border rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:border-action-primary focus:ring-1 focus:ring-action-primary transition-all"
-        />
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
+          <input {...register('email', { required: true, pattern: /^\S+@\S+$/i })} type="email" placeholder="you@institution.org" className={inputBase} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-body-sm font-medium text-textSecondary mb-1.5">Password</label>
-          <input
-            {...register("password", { required: true, minLength: 6 })}
-            type="password"
-            className="w-full bg-base border border-border rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:border-action-primary focus:ring-1 focus:ring-action-primary transition-all"
-          />
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
+            <input {...register('password', { required: true, minLength: 6 })} type="password" placeholder="••••••••" className={inputBase} />
+          </div>
         </div>
         <div>
           <label className="block text-body-sm font-medium text-textSecondary mb-1.5">Confirm</label>
-          <input
-            {...register("confirmPassword", { required: true })}
-            type="password"
-            className="w-full bg-base border border-border rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:border-action-primary focus:ring-1 focus:ring-action-primary transition-all"
-          />
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-textMuted" />
+            <input {...register('confirmPassword', { required: true })} type="password" placeholder="••••••••" className={inputBase} />
+          </div>
         </div>
       </div>
 
-      <div className="pt-2">
-        <label className="block text-body-sm font-medium text-textSecondary mb-2">Select Role</label>
+      {/* Role selector */}
+      <div>
+        <label className="block text-body-sm font-medium text-textSecondary mb-2">Select Your Role</label>
         <div className="grid grid-cols-2 gap-3">
-          <div 
-            onClick={() => setValue('role', 'viewer')}
-            className={`cursor-pointer p-3 rounded-xl border ${selectedRole === 'viewer' ? 'bg-action-primary/10 border-action-primary shadow-glow-blue' : 'bg-base border-border hover:border-textMuted'} transition-all`}
-          >
-            <div className="text-sm font-semibold mb-1 flex items-center gap-2">👁 Researcher</div>
-            <div className="text-[11px] text-textSecondary">Read & Explore data</div>
-          </div>
-          <div 
-            onClick={() => setValue('role', 'publisher')}
-            className={`cursor-pointer p-3 rounded-xl border ${selectedRole === 'publisher' ? 'bg-action-primary/10 border-action-primary shadow-glow-blue' : 'bg-base border-border hover:border-textMuted'} transition-all`}
-          >
-            <div className="text-sm font-semibold mb-1 flex items-center gap-2">📝 Publisher</div>
-            <div className="text-[11px] text-textSecondary">Publish & Track research</div>
-          </div>
+          {[
+            { value: 'viewer',    emoji: '👁',  title: 'Researcher',  desc: 'Read & Explore' },
+            { value: 'publisher', emoji: '📝', title: 'Publisher',   desc: 'Publish & Track' },
+          ].map(({ value, emoji, title, desc }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setValue('role', value as 'viewer' | 'publisher')}
+              className={`p-3 rounded-xl border text-left transition-all ${
+                role === value
+                  ? 'bg-action-primary/10 border-action-primary shadow-glow-blue'
+                  : 'bg-base border-border hover:border-textMuted'
+              }`}
+            >
+              <div className="text-body-sm font-semibold mb-0.5">{emoji} {title}</div>
+              <div className="text-[11px] text-textSecondary">{desc}</div>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-body-sm mt-4">
+      <label className="flex items-center gap-2 text-body-sm text-textSecondary cursor-pointer mt-2">
         <input type="checkbox" required className="rounded border-border bg-base text-action-primary focus:ring-action-primary" />
-        <span className="text-textSecondary">I agree to the <a href="#" onClick={(e) => { e.preventDefault(); toast.info('Terms & Conditions document opened.'); }} className="text-action-primary hover:text-blue-400">Terms & Conditions</a></span>
-      </div>
+        I agree to the{' '}
+        <button type="button" onClick={() => toast.info('Terms opened')} className="text-action-primary hover:underline">
+          Terms &amp; Conditions
+        </button>
+      </label>
 
       <button
         type="submit"
-        disabled={isLoading}
-        className="w-full h-12 mt-2 bg-action-primary hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-glow-blue flex items-center justify-center"
+        disabled={loading}
+        className="w-full h-12 bg-action-primary hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-glow-blue flex items-center justify-center gap-2 disabled:opacity-70 mt-2"
       >
-        {isLoading ? <Activity className="w-5 h-5 animate-spin" /> : 'Create Account'}
+        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
       </button>
 
-      <div className="relative flex items-center py-4 mt-2">
-        <div className="flex-grow border-t border-border"></div>
-        <span className="flex-shrink-0 mx-4 text-xs text-textMuted uppercase tracking-wider">or continue with</span>
-        <div className="flex-grow border-t border-border"></div>
-      </div>
-
-      <button type="button" onClick={handleGoogleAuth} disabled={isLoading} className="w-full h-12 bg-base border border-border hover:bg-surface text-textPrimary font-medium rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
-        <svg viewBox="0 0 24 24" className="w-5 h-5"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        Google OAuth
-      </button>
+      <Divider />
+      <GoogleButton onClick={googleSignup} loading={loading} />
     </form>
   );
 }

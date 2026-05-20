@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Poppins, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
-const inter = Inter({
+
+const poppins = Poppins({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-poppins',
   display: 'swap',
 });
 
@@ -32,8 +34,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className={`${inter.className} min-h-screen bg-bg-base text-textPrimary antialiased`}>
+    <html lang="en" className={`${poppins.variable} ${jetbrainsMono.variable}`}>
+      <body className={`${poppins.className} min-h-screen bg-void text-textPrimary antialiased`}>
         <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>

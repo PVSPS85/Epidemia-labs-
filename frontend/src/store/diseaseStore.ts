@@ -23,7 +23,12 @@ export const useDiseaseStore = create<DiseaseState>((set) => ({
       const response = await api.getDiseases();
       set({ diseases: response.data, isLoading: false });
     } catch (err: any) {
-      set({ error: err.message || 'Failed to fetch diseases', isLoading: false });
+      // Don't show fake data — show proper empty state with error
+      set({
+        diseases: [],
+        error: err.message || 'Failed to connect to server. Please ensure the backend is running.',
+        isLoading: false,
+      });
     }
   },
 
@@ -33,7 +38,11 @@ export const useDiseaseStore = create<DiseaseState>((set) => ({
       const response = await api.getDiseaseById(id);
       set({ selectedDisease: response.data, isLoading: false });
     } catch (err: any) {
-      set({ error: err.message || 'Failed to fetch disease details', isLoading: false });
+      set({
+        selectedDisease: null,
+        error: err.message || 'Disease not found or server unavailable.',
+        isLoading: false,
+      });
     }
   },
 }));

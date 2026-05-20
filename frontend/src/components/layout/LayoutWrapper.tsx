@@ -9,15 +9,20 @@ import { Toaster } from 'sonner';
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Define routes that shouldn't have sidebar/navbar
+  // Routes that are public (no shell)
   const isAuthRoute = pathname === '/' || pathname === '/login' || pathname === '/signup';
 
   return (
     <>
+      {/* Single global sidebar — only on authenticated routes */}
       {!isAuthRoute && <Sidebar />}
       {!isAuthRoute && <TopNavbar />}
-      
-      <main className={`${!isAuthRoute ? 'pl-[240px] pt-[64px]' : ''} min-h-screen bg-bg-base text-textPrimary`}>
+
+      <main
+        className={`${
+          !isAuthRoute ? 'pl-[240px] pt-[64px]' : ''
+        } min-h-screen bg-void text-textPrimary`}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}
@@ -31,8 +36,18 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
           </motion.div>
         </AnimatePresence>
       </main>
-      
-      <Toaster theme="dark" position="bottom-right" />
+
+      <Toaster
+        theme="dark"
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--bg-border)',
+            color: 'var(--text-primary)',
+          },
+        }}
+      />
     </>
   );
 }
