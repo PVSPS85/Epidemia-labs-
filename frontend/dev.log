@@ -1,0 +1,20 @@
+
+> epidemia-frontend@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1049ms
+ ○ Compiling /disease/[id] ...
+ ✓ Compiled /disease/[id] in 2.7s (2584 modules)
+ ✓ Compiled in 59ms (1238 modules)
+ GET /disease/covid-19 200 in 2923ms
+ GET /disease/covid-19 200 in 27ms
+ ✓ Compiled /favicon.ico in 133ms (1358 modules)
+ GET /favicon.ico 200 in 157ms
+ ✓ Compiled in 183ms (2552 modules)
+ ✓ Compiled in 141ms (2566 modules)
+ ✓ Compiled in 82ms (1238 modules)

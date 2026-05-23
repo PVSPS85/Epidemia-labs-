@@ -283,32 +283,79 @@ export default function DiseaseDetailPage() {
                 <path d="M350,320 Q400,310 450,315 Q500,330 550,320 Q580,310 610,320" stroke="#3B82F6" fill="none" strokeWidth="0.8"/>
               </svg>
 
+              {/* Animated Spread Trajectories */}
+              {d.hotspots && d.hotspots.length > 1 && (
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }} preserveAspectRatio="none">
+                  {d.hotspots.slice(1).map((hotspot, i) => {
+                    const origin = d.hotspots[0];
+                    // Calculate percentages for SVG path (0-100)
+                    const ox = ((origin.lng + 180) / 360) * 100;
+                    const oy = ((90 - origin.lat) / 180) * 100;
+                    const tx = ((hotspot.lng + 180) / 360) * 100;
+                    const ty = ((90 - hotspot.lat) / 180) * 100;
+                    
+                    // Simple quadratic curve for the trajectory
+                    const cx = (ox + tx) / 2;
+                    const cy = Math.min(oy, ty) - 15; // arc upwards
+                    const path = `M ${ox} ${oy} Q ${cx} ${cy} ${tx} ${ty}`;
+                    
+                    return (
+                      <motion.path
+                        key={`line-${i}`}
+                        d={path}
+                        fill="none"
+                        stroke="var(--sir-infected)"
+                        strokeWidth="0.5"
+                        strokeDasharray="1 1"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 0.4 }}
+                        transition={{ 
+                          duration: 2, 
+                          delay: i * 0.8 + 0.5, 
+                          ease: "easeInOut" 
+                        }}
+                      />
+                    );
+                  })}
+                </svg>
+              )}
+
               {/* Hotspot markers */}
               {(d.hotspots || []).map((hotspot, i) => {
                 // Convert lat/lng to approximate position percentages
                 const x = ((hotspot.lng + 180) / 360) * 100;
                 const y = ((90 - hotspot.lat) / 180) * 100;
+                const isOrigin = i === 0;
+
                 return (
-                  <div
+                  <motion.div
                     key={i}
                     className="absolute group"
-                    style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
+                    style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)', zIndex: 10 }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ 
+                      duration: 0.5, 
+                      delay: isOrigin ? 0 : (i - 1) * 0.8 + 2,
+                      type: 'spring'
+                    }}
                   >
                     {/* Pulse animation */}
                     <span
-                      className="absolute w-6 h-6 rounded-full bg-sir-infected/30 animate-ping"
-                      style={{ animationDelay: `${i * 0.3}s`, animationDuration: '2s' }}
+                      className={`absolute w-6 h-6 rounded-full bg-sir-infected/30 animate-ping ${isOrigin ? 'opacity-100' : 'opacity-60'}`}
+                      style={{ animationDuration: isOrigin ? '1.5s' : '3s' }}
                     />
                     {/* Core dot */}
                     <span
-                      className="relative block w-3 h-3 rounded-full bg-sir-infected border border-sir-infected/60 shadow-glow-red"
+                      className={`relative block rounded-full bg-sir-infected border border-sir-infected/60 shadow-glow-red ${isOrigin ? 'w-4 h-4' : 'w-3 h-3'}`}
                       style={{ opacity: 0.5 + hotspot.intensity * 0.5 }}
                     />
                     {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-overlay border border-border rounded-lg text-[10px] font-mono text-textPrimary whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg z-10">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-overlay border border-border rounded-lg text-[10px] font-mono text-textPrimary whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">
+                      <span className="text-sir-infected font-bold mr-1">{isOrigin ? 'ORIGIN:' : 'SPREAD:'}</span>
                       {hotspot.label} — {(hotspot.intensity * 100).toFixed(0)}% intensity
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
 

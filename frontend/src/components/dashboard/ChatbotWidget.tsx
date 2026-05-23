@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSimulationStore } from '@/store/simulationStore';
 import { api } from '@/lib/api';
 import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 
@@ -17,12 +18,14 @@ export default function ChatbotWidget() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'Hello! I am the Epidemia AI Assistant. How can I help you analyze disease data or SIR simulations today?',
+      content: 'Hello! I am the Epidemia AI Assistant. You can ask me to control the simulation! Try saying "Change R0 to 4.5" or "Set population to 5M".',
     },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { params, setParams, runSimulation } = useSimulationStore();
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -32,10 +35,51 @@ export default function ChatbotWidget() {
   const handleSend = async () => {
     if (!input.trim()) return;
     
+    const currentInput = input.trim().toLowerCase();
     const userMessage: Message = { id: Date.now().toString(), role: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setLoading(true);
+
+    // --- AI FALLBACK: LOCAL SIMULATION CONTROL ---
+    let handledLocally = false;
+    let newParams = { ...params };
+    let replyText = "";
+
+    const r0Match = currentInput.match(/r0[^\d]*(\d+\.?\d*)/);
+    if (r0Match && r0Match[1]) {
+      const newR0 = parseFloat(r0Match[1]);
+      newParams.beta = newR0 * newParams.gamma;
+      replyText = `I have updated the Basic Reproduction Number (R₀) to ${newR0}. The simulation graph has been updated in real-time.`;
+      handledLocally = true;
+    }
+
+    const popMatch = currentInput.match(/population[^\d]*(\d+\.?\d*[km]?)/);
+    if (popMatch && popMatch[1]) {
+      let popStr = popMatch[1];
+      let multiplier = 1;
+      if (popStr.includes('k')) multiplier = 1000;
+      if (popStr.includes('m')) multiplier = 1000000;
+      const newPop = parseFloat(popStr.replace(/[km]/, '')) * multiplier;
+      if (!isNaN(newPop)) {
+         newParams.N = newPop;
+         replyText = `I have updated the population size (N) to ${newPop.toLocaleString()}. The simulation graph has been refreshed.`;
+         handledLocally = true;
+      }
+    }
+
+    if (handledLocally) {
+      setParams(newParams);
+      runSimulation();
+      setMessages((prev) => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: replyText,
+      }]);
+      setLoading(false);
+      return; // Skip backend call
+    }
+    // ---------------------------------------------
 
     try {
       const res = await fetch('/api/chat', {
