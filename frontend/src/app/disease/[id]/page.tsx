@@ -262,7 +262,7 @@ export default function DiseaseDetailPage() {
           <div className="bg-surface border border-border rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-5">
               <MapPin className="w-5 h-5 text-action-primary" />
-              <h3 className="text-heading-md font-semibold">Geographic Spread</h3>
+              <h3 className="text-heading-md font-semibold">Geographic Spread Simulation</h3>
               <span className="relative flex items-center gap-1.5 ml-auto">
                 <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-sir-infected opacity-60" />
                 <span className="relative w-2 h-2 rounded-full bg-sir-infected" />
@@ -270,101 +270,149 @@ export default function DiseaseDetailPage() {
               </span>
             </div>
 
-            {/* Map visualization using CSS grid for hotspot positions */}
-            <div className="relative h-[300px] bg-raised rounded-xl border border-border overflow-hidden">
-              {/* Dark world map background gradient */}
+            {/* Animated SVG Map */}
+            <div className="relative h-[400px] bg-raised rounded-xl border border-border overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-void via-base to-overlay" />
 
-              {/* World map outline SVG - simplified */}
-              <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full opacity-[0.08]" preserveAspectRatio="xMidYMid meet">
-                <path d="M150,120 Q200,100 250,110 Q300,90 350,100 Q380,80 420,90 L450,85 Q480,100 500,95 L530,100 Q560,90 580,100 Q620,80 660,95 Q700,90 730,100 Q760,85 780,95 L800,100 Q830,110 850,105" stroke="#3B82F6" fill="none" strokeWidth="1.5"/>
-                <path d="M200,180 Q250,170 300,175 Q350,160 400,170 Q430,180 460,175 Q500,185 540,180 Q580,170 620,175 Q660,185 700,180 Q740,170 780,175" stroke="#3B82F6" fill="none" strokeWidth="1"/>
-                <path d="M250,250 Q300,240 350,245 Q400,260 450,250 Q500,240 550,248 Q600,260 650,250" stroke="#3B82F6" fill="none" strokeWidth="1"/>
-                <path d="M350,320 Q400,310 450,315 Q500,330 550,320 Q580,310 610,320" stroke="#3B82F6" fill="none" strokeWidth="0.8"/>
-              </svg>
+              <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
+                {/* World map continent outlines */}
+                {/* North America */}
+                <path d="M120,80 L180,60 L220,70 L260,90 L280,120 L270,160 L240,200 L200,230 L160,240 L140,220 L120,180 L100,140 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
+                {/* South America */}
+                <path d="M220,260 L260,240 L290,260 L300,300 L290,340 L270,380 L240,400 L220,380 L210,340 L200,300 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
+                {/* Europe */}
+                <path d="M440,60 L480,50 L520,60 L540,80 L530,110 L500,120 L470,110 L450,90 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
+                {/* Africa */}
+                <path d="M460,140 L500,130 L540,140 L560,180 L570,240 L560,300 L530,340 L490,360 L460,340 L440,300 L430,240 L440,180 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
+                {/* Asia */}
+                <path d="M560,50 L620,40 L700,50 L780,70 L820,100 L830,140 L800,180 L750,200 L700,190 L650,180 L600,150 L570,120 L560,80 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
+                {/* India */}
+                <path d="M660,160 L690,150 L710,180 L700,230 L680,260 L660,240 L650,200 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
+                {/* Australia */}
+                <path d="M780,300 L840,290 L880,310 L870,350 L830,370 L790,360 L770,330 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
 
-              {/* Animated Spread Trajectories */}
-              {d.hotspots && d.hotspots.length > 1 && (
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }} preserveAspectRatio="none">
-                  {d.hotspots.slice(1).map((hotspot, i) => {
-                    const origin = d.hotspots[0];
-                    // Calculate percentages for SVG path (0-100)
-                    const ox = ((origin.lng + 180) / 360) * 100;
-                    const oy = ((90 - origin.lat) / 180) * 100;
-                    const tx = ((hotspot.lng + 180) / 360) * 100;
-                    const ty = ((90 - hotspot.lat) / 180) * 100;
-                    
-                    // Simple quadratic curve for the trajectory
-                    const cx = (ox + tx) / 2;
-                    const cy = Math.min(oy, ty) - 15; // arc upwards
-                    const path = `M ${ox} ${oy} Q ${cx} ${cy} ${tx} ${ty}`;
-                    
-                    return (
+                {/* Grid lines */}
+                {[100,200,300,400].map(y => (
+                  <line key={`h-${y}`} x1="0" y1={y} x2="1000" y2={y} stroke="#3B82F6" strokeWidth="0.3" opacity="0.08" />
+                ))}
+                {[200,400,600,800].map(x => (
+                  <line key={`v-${x}`} x1={x} y1="0" x2={x} y2="500" stroke="#3B82F6" strokeWidth="0.3" opacity="0.08" />
+                ))}
+
+                {/* Animated trajectory lines from origin to other hotspots */}
+                {d.hotspots && d.hotspots.length > 1 && d.hotspots.slice(1).map((hotspot, i) => {
+                  const origin = d.hotspots[0];
+                  const ox = ((origin.lng + 180) / 360) * 1000;
+                  const oy = ((90 - origin.lat) / 180) * 500;
+                  const tx = ((hotspot.lng + 180) / 360) * 1000;
+                  const ty = ((90 - hotspot.lat) / 180) * 500;
+                  const cx = (ox + tx) / 2;
+                  const cy = Math.min(oy, ty) - 60;
+                  const pathD = `M ${ox} ${oy} Q ${cx} ${cy} ${tx} ${ty}`;
+
+                  return (
+                    <g key={`traj-${i}`}>
+                      {/* Glow trail */}
                       <motion.path
-                        key={`line-${i}`}
-                        d={path}
+                        d={pathD}
                         fill="none"
-                        stroke="var(--sir-infected)"
-                        strokeWidth="0.5"
-                        strokeDasharray="1 1"
+                        stroke="#EF4444"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        opacity={0.15}
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 2.5, delay: i * 1.2 + 0.5, ease: "easeInOut" }}
+                      />
+                      {/* Main line */}
+                      <motion.path
+                        d={pathD}
+                        fill="none"
+                        stroke="#EF4444"
+                        strokeWidth="1.5"
+                        strokeDasharray="6 4"
+                        strokeLinecap="round"
                         initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 0.4 }}
-                        transition={{ 
-                          duration: 2, 
-                          delay: i * 0.8 + 0.5, 
-                          ease: "easeInOut" 
+                        animate={{ pathLength: 1, opacity: 0.8 }}
+                        transition={{ duration: 2.5, delay: i * 1.2 + 0.5, ease: "easeInOut" }}
+                      />
+                    </g>
+                  );
+                })}
+
+                {/* Hotspot markers as SVG circles */}
+                {(d.hotspots || []).map((hotspot, i) => {
+                  const cx = ((hotspot.lng + 180) / 360) * 1000;
+                  const cy = ((90 - hotspot.lat) / 180) * 500;
+                  const isOrigin = i === 0;
+                  const r = isOrigin ? 8 : 5 + hotspot.intensity * 3;
+
+                  return (
+                    <g key={`dot-${i}`}>
+                      {/* Outer pulse ring */}
+                      <motion.circle
+                        cx={cx} cy={cy} r={r * 3}
+                        fill="none" stroke="#EF4444" strokeWidth="1"
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: [0, 0.4, 0], scale: [0.5, 1.5, 2] }}
+                        transition={{
+                          duration: 2,
+                          delay: isOrigin ? 0.2 : i * 1.2 + 2.5,
+                          repeat: Infinity,
+                          repeatDelay: 1,
                         }}
                       />
-                    );
-                  })}
-                </svg>
-              )}
+                      {/* Core dot */}
+                      <motion.circle
+                        cx={cx} cy={cy} r={r}
+                        fill="#EF4444"
+                        opacity={0.6 + hotspot.intensity * 0.4}
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 0.6 + hotspot.intensity * 0.4 }}
+                        transition={{
+                          duration: 0.6,
+                          delay: isOrigin ? 0 : i * 1.2 + 2.5,
+                          type: 'spring',
+                        }}
+                      />
+                      {/* Label */}
+                      <motion.text
+                        x={cx} y={cy - r - 6}
+                        textAnchor="middle"
+                        fill="#F8FAFC"
+                        fontSize="11"
+                        fontFamily="monospace"
+                        fontWeight="bold"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: isOrigin ? 0.3 : i * 1.2 + 3 }}
+                      >
+                        {hotspot.label}
+                      </motion.text>
+                      {/* Intensity label */}
+                      <motion.text
+                        x={cx} y={cy + r + 14}
+                        textAnchor="middle"
+                        fill="#EF4444"
+                        fontSize="9"
+                        fontFamily="monospace"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.8 }}
+                        transition={{ delay: isOrigin ? 0.5 : i * 1.2 + 3.2 }}
+                      >
+                        {(hotspot.intensity * 100).toFixed(0)}%
+                      </motion.text>
+                    </g>
+                  );
+                })}
 
-              {/* Hotspot markers */}
-              {(d.hotspots || []).map((hotspot, i) => {
-                // Convert lat/lng to approximate position percentages
-                const x = ((hotspot.lng + 180) / 360) * 100;
-                const y = ((90 - hotspot.lat) / 180) * 100;
-                const isOrigin = i === 0;
-
-                return (
-                  <motion.div
-                    key={i}
-                    className="absolute group"
-                    style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)', zIndex: 10 }}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ 
-                      duration: 0.5, 
-                      delay: isOrigin ? 0 : (i - 1) * 0.8 + 2,
-                      type: 'spring'
-                    }}
-                  >
-                    {/* Pulse animation */}
-                    <span
-                      className={`absolute w-6 h-6 rounded-full bg-sir-infected/30 animate-ping ${isOrigin ? 'opacity-100' : 'opacity-60'}`}
-                      style={{ animationDuration: isOrigin ? '1.5s' : '3s' }}
-                    />
-                    {/* Core dot */}
-                    <span
-                      className={`relative block rounded-full bg-sir-infected border border-sir-infected/60 shadow-glow-red ${isOrigin ? 'w-4 h-4' : 'w-3 h-3'}`}
-                      style={{ opacity: 0.5 + hotspot.intensity * 0.5 }}
-                    />
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-overlay border border-border rounded-lg text-[10px] font-mono text-textPrimary whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">
-                      <span className="text-sir-infected font-bold mr-1">{isOrigin ? 'ORIGIN:' : 'SPREAD:'}</span>
-                      {hotspot.label} — {(hotspot.intensity * 100).toFixed(0)}% intensity
-                    </div>
-                  </motion.div>
-                );
-              })}
-
-              {/* Empty state if no hotspots */}
-              {(!d.hotspots || d.hotspots.length === 0) && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="text-body-sm text-textMuted">No geographic data available</p>
-                </div>
-              )}
+                {/* Empty state */}
+                {(!d.hotspots || d.hotspots.length === 0) && (
+                  <text x="500" y="250" textAnchor="middle" fill="#64748B" fontSize="14" fontFamily="monospace">
+                    No geographic data available
+                  </text>
+                )}
+              </svg>
             </div>
 
             {/* Affected countries legend */}

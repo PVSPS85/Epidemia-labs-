@@ -27,6 +27,7 @@ const DISEASE_META: Record<string, Partial<Disease>> = {
       { iso: 'BR', cases: 37_728_840, severity: 'high' },
     ],
     hotspots: [
+      { lat: 30.6, lng: 114.3, label: 'Wuhan (Origin)', intensity: 1.0 },
       { lat: 40.7, lng: -74.0, label: 'New York', intensity: 0.9 },
       { lat: 19.1, lng: 72.9, label: 'Mumbai', intensity: 0.85 },
       { lat: -23.5, lng: -46.6, label: 'São Paulo', intensity: 0.8 },

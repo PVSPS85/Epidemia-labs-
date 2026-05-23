@@ -18,3 +18,13 @@
  ✓ Compiled in 183ms (2552 modules)
  ✓ Compiled in 141ms (2566 modules)
  ✓ Compiled in 82ms (1238 modules)
+ GET /disease/covid-19 200 in 118ms
+ ✓ Compiled /favicon.ico in 90ms (1358 modules)
+ GET /favicon.ico 200 in 115ms
+ GET /disease/covid-19 200 in 59ms
+ GET /favicon.ico 200 in 3ms
+ ✓ Compiled /dashboard/diseases in 426ms (2620 modules)
+ GET /dashboard/diseases 200 in 453ms
+ GET /favicon.ico 200 in 7ms
+ ✓ Compiled in 251ms (2604 modules)
+ ✓ Compiled in 338ms (2590 modules)
