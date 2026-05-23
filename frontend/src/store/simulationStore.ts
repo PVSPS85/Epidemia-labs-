@@ -41,26 +41,49 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
   setParams: (params) => set((state) => ({ ...state, ...params })),
 
   runSimulation: async () => {
-    const { beta, gamma, N, days } = get();
+    const { beta, gamma, N, I0, days } = get();
     set({ isLoading: true, error: null });
+
+    // Client-side SIR fallback function (Euler method)
+    const runLocalSIR = (): SIRDataPoint[] => {
+      const dt = 1;
+      const data: SIRDataPoint[] = [];
+      let S = N - I0;
+      let I = I0;
+      let R = 0;
+      for (let day = 0; day <= days; day++) {
+        data.push({ day, S: Math.round(S), I: Math.round(I), R: Math.round(R) });
+        const dS = -(beta * S * I) / N * dt;
+        const dI = ((beta * S * I) / N - gamma * I) * dt;
+        const dR = gamma * I * dt;
+        S += dS;
+        I += dI;
+        R += dR;
+        if (S < 0) S = 0;
+        if (I < 0) I = 0;
+      }
+      return data;
+    };
+
     try {
-      // Backend expects { population, r0, days }
-      // Convert beta/gamma back to r0 for the backend
       const r0 = gamma > 0 ? beta / gamma : 2.5;
       const response = await api.runSimulation({ population: N, r0, days });
-
-      // Backend returns { day, susceptible, infected, recovered }
-      // Frontend expects { day, S, I, R }
       const mapped: SIRDataPoint[] = (response.data || []).map((pt: any) => ({
         day: pt.day,
         S: pt.susceptible,
         I: pt.infected,
         R: pt.recovered,
       }));
-
-      set({ results: mapped, isLoading: false });
+      if (mapped.length > 0) {
+        set({ results: mapped, isLoading: false });
+      } else {
+        // Backend returned empty — use local fallback
+        set({ results: runLocalSIR(), isLoading: false });
+      }
     } catch (err: any) {
-      set({ error: err.message || 'Failed to run simulation', isLoading: false });
+      // Backend failed — run simulation locally so graph always works
+      console.warn('Backend simulation failed, running locally:', err.message);
+      set({ results: runLocalSIR(), isLoading: false, error: null });
     }
   },
 

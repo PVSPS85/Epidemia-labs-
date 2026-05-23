@@ -6,6 +6,8 @@ import { useDiseaseStore } from '@/store/diseaseStore';
 import { useSimulationStore } from '@/store/simulationStore';
 import SIRChart from '@/components/dashboard/SIRChart';
 import DiseaseStatPanel from '@/components/disease/DiseaseStatPanel';
+import dynamic from 'next/dynamic';
+const SpreadMap = dynamic(() => import('@/components/disease/SpreadMap'), { ssr: false });
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
@@ -270,149 +272,9 @@ export default function DiseaseDetailPage() {
               </span>
             </div>
 
-            {/* Animated SVG Map */}
-            <div className="relative h-[400px] bg-raised rounded-xl border border-border overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-void via-base to-overlay" />
-
-              <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
-                {/* World map continent outlines */}
-                {/* North America */}
-                <path d="M120,80 L180,60 L220,70 L260,90 L280,120 L270,160 L240,200 L200,230 L160,240 L140,220 L120,180 L100,140 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
-                {/* South America */}
-                <path d="M220,260 L260,240 L290,260 L300,300 L290,340 L270,380 L240,400 L220,380 L210,340 L200,300 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
-                {/* Europe */}
-                <path d="M440,60 L480,50 L520,60 L540,80 L530,110 L500,120 L470,110 L450,90 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
-                {/* Africa */}
-                <path d="M460,140 L500,130 L540,140 L560,180 L570,240 L560,300 L530,340 L490,360 L460,340 L440,300 L430,240 L440,180 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
-                {/* Asia */}
-                <path d="M560,50 L620,40 L700,50 L780,70 L820,100 L830,140 L800,180 L750,200 L700,190 L650,180 L600,150 L570,120 L560,80 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
-                {/* India */}
-                <path d="M660,160 L690,150 L710,180 L700,230 L680,260 L660,240 L650,200 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
-                {/* Australia */}
-                <path d="M780,300 L840,290 L880,310 L870,350 L830,370 L790,360 L770,330 Z" fill="none" stroke="#3B82F6" strokeWidth="0.8" opacity="0.2" />
-
-                {/* Grid lines */}
-                {[100,200,300,400].map(y => (
-                  <line key={`h-${y}`} x1="0" y1={y} x2="1000" y2={y} stroke="#3B82F6" strokeWidth="0.3" opacity="0.08" />
-                ))}
-                {[200,400,600,800].map(x => (
-                  <line key={`v-${x}`} x1={x} y1="0" x2={x} y2="500" stroke="#3B82F6" strokeWidth="0.3" opacity="0.08" />
-                ))}
-
-                {/* Animated trajectory lines from origin to other hotspots */}
-                {d.hotspots && d.hotspots.length > 1 && d.hotspots.slice(1).map((hotspot, i) => {
-                  const origin = d.hotspots[0];
-                  const ox = ((origin.lng + 180) / 360) * 1000;
-                  const oy = ((90 - origin.lat) / 180) * 500;
-                  const tx = ((hotspot.lng + 180) / 360) * 1000;
-                  const ty = ((90 - hotspot.lat) / 180) * 500;
-                  const cx = (ox + tx) / 2;
-                  const cy = Math.min(oy, ty) - 60;
-                  const pathD = `M ${ox} ${oy} Q ${cx} ${cy} ${tx} ${ty}`;
-
-                  return (
-                    <g key={`traj-${i}`}>
-                      {/* Glow trail */}
-                      <motion.path
-                        d={pathD}
-                        fill="none"
-                        stroke="#EF4444"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        opacity={0.15}
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 2.5, delay: i * 1.2 + 0.5, ease: "easeInOut" }}
-                      />
-                      {/* Main line */}
-                      <motion.path
-                        d={pathD}
-                        fill="none"
-                        stroke="#EF4444"
-                        strokeWidth="1.5"
-                        strokeDasharray="6 4"
-                        strokeLinecap="round"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 0.8 }}
-                        transition={{ duration: 2.5, delay: i * 1.2 + 0.5, ease: "easeInOut" }}
-                      />
-                    </g>
-                  );
-                })}
-
-                {/* Hotspot markers as SVG circles */}
-                {(d.hotspots || []).map((hotspot, i) => {
-                  const cx = ((hotspot.lng + 180) / 360) * 1000;
-                  const cy = ((90 - hotspot.lat) / 180) * 500;
-                  const isOrigin = i === 0;
-                  const r = isOrigin ? 8 : 5 + hotspot.intensity * 3;
-
-                  return (
-                    <g key={`dot-${i}`}>
-                      {/* Outer pulse ring */}
-                      <motion.circle
-                        cx={cx} cy={cy} r={r * 3}
-                        fill="none" stroke="#EF4444" strokeWidth="1"
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: [0, 0.4, 0], scale: [0.5, 1.5, 2] }}
-                        transition={{
-                          duration: 2,
-                          delay: isOrigin ? 0.2 : i * 1.2 + 2.5,
-                          repeat: Infinity,
-                          repeatDelay: 1,
-                        }}
-                      />
-                      {/* Core dot */}
-                      <motion.circle
-                        cx={cx} cy={cy} r={r}
-                        fill="#EF4444"
-                        opacity={0.6 + hotspot.intensity * 0.4}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 0.6 + hotspot.intensity * 0.4 }}
-                        transition={{
-                          duration: 0.6,
-                          delay: isOrigin ? 0 : i * 1.2 + 2.5,
-                          type: 'spring',
-                        }}
-                      />
-                      {/* Label */}
-                      <motion.text
-                        x={cx} y={cy - r - 6}
-                        textAnchor="middle"
-                        fill="#F8FAFC"
-                        fontSize="11"
-                        fontFamily="monospace"
-                        fontWeight="bold"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: isOrigin ? 0.3 : i * 1.2 + 3 }}
-                      >
-                        {hotspot.label}
-                      </motion.text>
-                      {/* Intensity label */}
-                      <motion.text
-                        x={cx} y={cy + r + 14}
-                        textAnchor="middle"
-                        fill="#EF4444"
-                        fontSize="9"
-                        fontFamily="monospace"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.8 }}
-                        transition={{ delay: isOrigin ? 0.5 : i * 1.2 + 3.2 }}
-                      >
-                        {(hotspot.intensity * 100).toFixed(0)}%
-                      </motion.text>
-                    </g>
-                  );
-                })}
-
-                {/* Empty state */}
-                {(!d.hotspots || d.hotspots.length === 0) && (
-                  <text x="500" y="250" textAnchor="middle" fill="#64748B" fontSize="14" fontFamily="monospace">
-                    No geographic data available
-                  </text>
-                )}
-              </svg>
+            {/* Real World Map with react-simple-maps */}
+            <div className="h-[450px] bg-raised rounded-xl border border-border overflow-hidden">
+              <SpreadMap hotspots={d.hotspots || []} />
             </div>
 
             {/* Affected countries legend */}
