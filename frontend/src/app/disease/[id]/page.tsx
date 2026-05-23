@@ -340,6 +340,7 @@ export default function DiseaseDetailPage() {
                 ))}
               </div>
             )}
+          </div>
         </div>
 
         {/* RIGHT: Sticky stat panel (35%) */}
