@@ -6,8 +6,8 @@ settings = get_settings()
 # Configure the Gemini API securely
 genai.configure(api_key=settings.GEMINI_API_KEY)
 
-# Initialize the model (using 1.5-pro for complex research reasoning)
-model = genai.GenerativeModel('gemini-1.5-pro')
+# Initialize the model (using 2.0-flash for fast, reliable responses)
+model = genai.GenerativeModel('gemini-2.0-flash')
 
 async def get_disease_answer(question: str, context: str = "") -> str:
     """
