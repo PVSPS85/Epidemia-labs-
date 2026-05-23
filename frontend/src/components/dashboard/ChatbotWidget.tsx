@@ -103,7 +103,7 @@ export default function ChatbotWidget() {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-base/50">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 {/* Avatar */}
@@ -147,13 +147,13 @@ export default function ChatbotWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                className="w-full bg-background border border-border rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
+                className="w-full bg-base border border-border rounded-xl pl-4 pr-12 py-3 text-textPrimary placeholder-textMuted focus:outline-none focus:border-primary transition-colors"
                 disabled={loading}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="absolute right-2 w-8 h-8 bg-primary text-background rounded-lg flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="absolute right-2 w-8 h-8 bg-primary text-base rounded-lg flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send className="w-4 h-4 ml-0.5" />
               </button>

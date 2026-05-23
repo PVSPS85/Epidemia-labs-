@@ -121,9 +121,9 @@ function BrandPanel() {
         </div>
         <div>
           <p className="text-body-sm font-semibold text-textPrimary">
-            Trusted by 2,400+ epidemiologists
+            Exclusive Research Platform
           </p>
-          <p className="text-[11px] text-textMuted">Across 120+ countries &bull; WHO affiliated</p>
+          <p className="text-[11px] text-textMuted">For verified epidemiologists &amp; health orgs</p>
         </div>
       </div>
     </div>
