@@ -3,7 +3,7 @@
 import { ComposableMap, Geographies, Geography, Marker, Line } from 'react-simple-maps';
 import { useState, useEffect } from 'react';
 
-const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json';
+const GEO_URL = '/land-110m.json';
 
 interface Hotspot {
   lat: number;
