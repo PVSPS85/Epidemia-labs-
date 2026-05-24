@@ -2,6 +2,7 @@ import { Disease } from '@/types';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Activity, ShieldAlert, ArrowRight, FlaskConical } from 'lucide-react';
+import { useState } from 'react';
 
 const severityConfig = {
   critical: {
@@ -57,6 +58,7 @@ function SIRSparkline({ r0 }: { r0: number }) {
 
 export default function DiseaseCard({ disease }: { disease: Disease }) {
   const sev = severityConfig[disease.severity] ?? severityConfig.low;
+  const [imgError, setImgError] = useState(false);
 
   return (
     <motion.div
@@ -66,15 +68,17 @@ export default function DiseaseCard({ disease }: { disease: Disease }) {
     >
       {/* Cover image */}
       <div className="relative h-[160px] w-full bg-raised flex-shrink-0">
-        {disease.coverImage ? (
+        {disease.coverImage && !imgError ? (
           <img
             src={disease.coverImage}
             alt={disease.name}
+            onError={() => setImgError(true)}
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Activity className="w-10 h-10 text-textMuted opacity-30" />
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-base via-raised to-overlay">
+            <Activity className="w-10 h-10 text-textMuted opacity-30 mb-2" />
+            <span className="text-[10px] font-mono text-textMuted uppercase opacity-50 tracking-widest">{disease.pathogenType}</span>
           </div>
         )}
         {/* Gradient overlay */}

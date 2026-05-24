@@ -56,6 +56,11 @@ export interface Disease {
   article: {
     abstract:  string;
     body:      string;
+    symptoms:    string[];
+    precautions: string[];
+    treatments:  string[];
+    originDate:  string;
+    originLocation: string;
     citations: Citation[];
   };
   author:      Publisher;

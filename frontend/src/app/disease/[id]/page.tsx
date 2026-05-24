@@ -13,6 +13,7 @@ import Link from 'next/link';
 import {
   Share2, Bookmark, Download, Play, ShieldAlert,
   ChevronRight, MapPin, Microscope, AlertCircle, RefreshCw,
+  Activity, Shield
 } from 'lucide-react';
 
 export default function DiseaseDetailPage() {
@@ -25,18 +26,25 @@ export default function DiseaseDetailPage() {
     fetchDiseaseById(id);
   }, [id, fetchDiseaseById]);
 
+  const [simYears, setSimYears] = useState(1);
+
   useEffect(() => {
     if (selectedDisease) {
+      const currentR0 = selectedDisease.stats.r0;
+      const gamma = selectedDisease.sirParams.gamma;
+      const beta = currentR0 * gamma;
+      const effectiveN = selectedDisease.sirParams.N;
+
       setParams({
-        beta:  selectedDisease.sirParams.beta,
-        gamma: selectedDisease.sirParams.gamma,
-        N:     selectedDisease.sirParams.N,
+        beta:  beta,
+        gamma: gamma,
+        N:     Math.max(1, effectiveN),
         I0:    selectedDisease.sirParams.I0,
-        days:  120,
+        days:  Math.round(365 * simYears),
       });
       runSimulation();
     }
-  }, [selectedDisease, setParams, runSimulation]);
+  }, [selectedDisease, setParams, runSimulation, simYears]);
 
   // Loading skeleton
   if (isLoading) {
@@ -92,6 +100,7 @@ export default function DiseaseDetailPage() {
 
   return (
     <motion.div
+      key={id}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -195,35 +204,95 @@ export default function DiseaseDetailPage() {
             </p>
           </div>
 
-          {/* Article body */}
-          <div className="space-y-6">
-            <h2 className="text-heading-md font-semibold border-l-4 border-l-action-primary pl-4">
-              Epidemiological Profile
-            </h2>
-            <div className="text-body-lg leading-[1.85] text-textSecondary space-y-4 whitespace-pre-line">
-              {d.article?.body || 'Detailed epidemiological analysis not available.'}
-            </div>
+            {/* Article body */}
+            <div className="space-y-6">
+              <h2 className="text-heading-md font-semibold border-l-4 border-l-action-primary pl-4">
+                Epidemiological Profile
+              </h2>
+              <div className="text-body-lg leading-[1.85] text-textSecondary space-y-4 whitespace-pre-line">
+                {d.article?.body || 'Detailed epidemiological analysis not available.'}
+              </div>
 
-            {/* Key stats callout */}
-            <div className="grid grid-cols-3 gap-4 bg-surface border border-border rounded-xl p-5">
-              {[
-                { label: 'Case Fatality Rate', value: `${d.stats.cfr}%`, color: 'text-sir-infected' },
-                { label: 'Reproduction Number R₀', value: d.stats.r0.toFixed(1), color: 'text-sir-susceptible' },
-                { label: 'Total Documented Cases', value: d.stats.totalCases >= 1_000_000 ? `${(d.stats.totalCases/1_000_000).toFixed(1)}M` : `${(d.stats.totalCases/1_000).toFixed(0)}K`, color: 'text-textPrimary' },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="text-center">
-                  <p className={`text-2xl font-bold ${color} font-mono`}>{value}</p>
-                  <p className="text-[11px] text-textMuted mt-1">{label}</p>
+              {/* Research Deep Dive Grids */}
+              {d.article?.symptoms && (
+                <div className="grid md:grid-cols-2 gap-6 pt-6">
+                  <div className="bg-raised p-5 rounded-xl border border-border">
+                    <h3 className="text-body-md font-bold text-textPrimary mb-3 flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-sir-infected" /> Symptoms
+                    </h3>
+                    <ul className="space-y-2">
+                      {d.article.symptoms.map((sym, i) => (
+                        <li key={i} className="flex items-start gap-2 text-body-sm text-textSecondary">
+                          <span className="text-sir-infected mt-0.5">•</span> {sym}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="bg-raised p-5 rounded-xl border border-border">
+                    <h3 className="text-body-md font-bold text-textPrimary mb-3 flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-action-primary" /> Treatments
+                    </h3>
+                    <ul className="space-y-2">
+                      {d.article.treatments?.map((trt, i) => (
+                        <li key={i} className="flex items-start gap-2 text-body-sm text-textSecondary">
+                          <span className="text-action-primary mt-0.5">•</span> {trt}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="bg-raised p-5 rounded-xl border border-border">
+                    <h3 className="text-body-md font-bold text-textPrimary mb-3 flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-sir-recovered" /> Precautions
+                    </h3>
+                    <ul className="space-y-2">
+                      {d.article.precautions?.map((pre, i) => (
+                        <li key={i} className="flex items-start gap-2 text-body-sm text-textSecondary">
+                          <span className="text-sir-recovered mt-0.5">•</span> {pre}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="bg-raised p-5 rounded-xl border border-border">
+                    <h3 className="text-body-md font-bold text-textPrimary mb-3 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-textMuted" /> Origin Data
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-[11px] text-textMuted uppercase font-mono">Date of Origin</p>
+                        <p className="text-body-sm text-textSecondary">{d.article.originDate || 'Unknown'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-textMuted uppercase font-mono">Location</p>
+                        <p className="text-body-sm text-textSecondary">{d.article.originLocation || 'Unknown'}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              ))}
+              )}
+
+              {/* Key stats callout */}
+              <div className="grid grid-cols-3 gap-4 bg-surface border border-border rounded-xl p-5 mt-6">
+                {[
+                  { label: 'Case Fatality Rate', value: `${d.stats.cfr}%`, color: 'text-sir-infected' },
+                  { label: 'Reproduction Number R₀', value: d.stats.r0.toFixed(1), color: 'text-sir-susceptible' },
+                  { label: 'Total Documented Cases', value: d.stats.totalCases >= 1_000_000 ? `${(d.stats.totalCases/1_000_000).toFixed(1)}M` : `${(d.stats.totalCases/1_000).toFixed(0)}K`, color: 'text-textPrimary' },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="text-center">
+                    <p className={`text-2xl font-bold ${color} font-mono`}>{value}</p>
+                    <p className="text-[11px] text-textMuted mt-1">{label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
 
           {/* SIR Chart */}
           <div className="bg-surface border border-border rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-5">
               <Play className="w-5 h-5 text-action-primary" />
-              <h3 className="text-heading-md font-semibold">SIR Epidemic Model</h3>
+              <h3 className="text-heading-md font-semibold">Interactive SIR Model</h3>
               {simLoading && (
                 <span className="ml-auto text-[11px] text-textMuted font-mono flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-action-primary animate-pulse" />
@@ -231,12 +300,37 @@ export default function DiseaseDetailPage() {
                 </span>
               )}
             </div>
+            
             <div className="h-[400px]">
               <SIRChart
                 data={results}
                 loading={simLoading}
                 onPlayToggle={() => setIsPlaying(!isPlaying)}
               />
+            </div>
+
+            {/* Interactive Simulation Controls */}
+            <div className="mt-8 pt-6 border-t border-border">
+              {/* Timeframe Slider */}
+              <div className="space-y-3 max-w-md">
+                <div className="flex justify-between items-center">
+                  <label className="text-body-sm font-semibold text-textSecondary flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4 text-textMuted" /> Simulation Timeframe
+                  </label>
+                  <span className="text-[11px] font-mono text-action-primary font-bold bg-action-primary/10 px-2 py-0.5 rounded">
+                    {simYears} {simYears === 1 ? 'Year' : 'Years'}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="0.5"
+                  value={simYears}
+                  onChange={(e) => setSimYears(parseFloat(e.target.value))}
+                  className="w-full accent-action-primary"
+                />
+              </div>
             </div>
           </div>
 
@@ -274,7 +368,7 @@ export default function DiseaseDetailPage() {
 
             {/* Real World Map with react-simple-maps */}
             <div className="h-[450px] bg-raised rounded-xl border border-border overflow-hidden">
-              <SpreadMap hotspots={d.hotspots || []} />
+              <SpreadMap hotspots={d.hotspots || []} simYears={simYears} maxYears={10} />
             </div>
 
             {/* Affected countries legend */}

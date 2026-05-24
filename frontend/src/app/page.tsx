@@ -106,26 +106,6 @@ function BrandPanel() {
         </div>
       </div>
 
-      {/* Trust footer */}
-      <div className="relative z-10 flex items-center gap-4">
-        {/* Avatar stack */}
-        <div className="flex -space-x-2.5">
-          {avatars.map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt=""
-              className="w-8 h-8 rounded-full border-2 border-base object-cover"
-            />
-          ))}
-        </div>
-        <div>
-          <p className="text-body-sm font-semibold text-textPrimary">
-            Exclusive Research Platform
-          </p>
-          <p className="text-[11px] text-textMuted">For verified epidemiologists &amp; health orgs</p>
-        </div>
-      </div>
     </div>
   );
 }
@@ -391,7 +371,7 @@ function SignupForm() {
       <label className="flex items-center gap-2 text-body-sm text-textSecondary cursor-pointer mt-2">
         <input type="checkbox" required className="rounded border-border bg-base text-action-primary focus:ring-action-primary" />
         I agree to the{' '}
-        <button type="button" onClick={() => toast.info('Terms opened')} className="text-action-primary hover:underline">
+        <button type="button" onClick={() => toast.info('Terms opened')} className="text-blue-400 hover:text-blue-300 hover:underline">
           Terms &amp; Conditions
         </button>
       </label>
