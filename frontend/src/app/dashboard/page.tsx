@@ -2,16 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useDiseaseStore } from '@/store/diseaseStore';
-import StatChip from '@/components/dashboard/StatChip';
 import DiseaseCard from '@/components/disease/DiseaseCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  AlertTriangle, Users, ShieldCheck, FileText,
   ServerCrash, RefreshCw, BookOpen, ArrowRight,
   TrendingUp, Globe
 } from 'lucide-react';
 import Link from 'next/link';
-import { api } from '@/lib/api';
 
 const FILTER_TABS = ['All', 'Pandemic', 'Epidemic', 'Endemic', 'Outbreak', 'Contained'] as const;
 type FilterTab = typeof FILTER_TABS[number];
@@ -60,20 +57,10 @@ function EmptyState({ error, onRetry }: { error: string | null; onRetry: () => v
 export default function DashboardPage() {
   const { diseases, fetchDiseases, isLoading, error } = useDiseaseStore();
   const [activeTab, setActiveTab] = useState<FilterTab>('All');
-  const [pubCount, setPubCount] = useState(0);
 
   useEffect(() => {
     fetchDiseases();
-    // Fetch publications count
-    api.getPublications().then((r) => {
-      setPubCount(Array.isArray(r.data) ? r.data.length : 0);
-    }).catch(() => {});
   }, [fetchDiseases]);
-
-  // Aggregate stats from real data
-  const activeCases  = diseases.reduce((a, d) => a + (d.stats?.activeCases ?? 0), 0);
-  const atRiskPop    = diseases.reduce((a, d) => a + (d.stats?.totalCases  ?? 0), 0) * 12;
-  const recovered    = diseases.reduce((a, d) => a + (d.stats?.recovered   ?? 0), 0);
 
   // Filter diseases
   const filteredDiseases = activeTab === 'All'
@@ -84,45 +71,6 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto pb-16 space-y-10">
-
-      {/* ── HERO STAT STRIP ── */}
-      <section>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <StatChip
-            label="Active Cases"
-            value={activeCases}
-            variant="red"
-            sub="Live tracking"
-            subPositive={false}
-            icon={<AlertTriangle className="w-5 h-5" />}
-            loading={isLoading}
-          />
-          <StatChip
-            label="At Risk Population"
-            value={atRiskPop}
-            variant="yellow"
-            sub="Global estimate"
-            icon={<Users className="w-5 h-5" />}
-            loading={isLoading}
-          />
-          <StatChip
-            label="Recovered"
-            value={recovered}
-            variant="green"
-            sub="All outbreaks"
-            icon={<ShieldCheck className="w-5 h-5" />}
-            loading={isLoading}
-          />
-          <StatChip
-            label="Publications"
-            value={pubCount}
-            variant="blue"
-            sub="Research papers"
-            icon={<FileText className="w-5 h-5" />}
-            loading={isLoading}
-          />
-        </div>
-      </section>
 
       {/* ── ACTIVE OUTBREAK FEED ── */}
       <section>

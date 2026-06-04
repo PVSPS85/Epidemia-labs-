@@ -13,7 +13,21 @@ const SEVERITY_CONFIG = {
   low:      { color: 'text-sir-recovered', bg: 'bg-sir-recovered/10', border: 'border-sir-recovered/30', label: 'LOW', icon: Activity },
 };
 
-const TIME_AGO = ['2 hours ago', '5 hours ago', '12 hours ago', '1 day ago', '2 days ago', '3 days ago'];
+function timeAgo(dateString: string): string {
+  const now = Date.now();
+  const then = new Date(dateString).getTime();
+  if (isNaN(then)) return 'Recently';
+  const diffMs = now - then;
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days} day${days !== 1 ? 's' : ''} ago`;
+  const months = Math.floor(days / 30);
+  return `${months} month${months !== 1 ? 's' : ''} ago`;
+}
 
 export default function AlertsPage() {
   const { diseases, fetchDiseases, isLoading } = useDiseaseStore();
@@ -22,7 +36,7 @@ export default function AlertsPage() {
     fetchDiseases();
   }, [fetchDiseases]);
 
-  const alerts = diseases.map((d, i) => {
+  const alerts = diseases.map((d) => {
     const sev = d.severity || 'moderate';
     const config = SEVERITY_CONFIG[sev] || SEVERITY_CONFIG.moderate;
     const Icon = config.icon;
@@ -33,7 +47,7 @@ export default function AlertsPage() {
       config,
       Icon,
       message: `${d.name} outbreak detected with R₀ of ${d.stats?.r0?.toFixed(1) || '?'}. ${d.stats?.activeCases?.toLocaleString() || 0} active cases reported across ${d.affectedCountries?.length || 0} countries.`,
-      time: TIME_AGO[i % TIME_AGO.length],
+      time: timeAgo(d.publishedAt),
     };
   });
 

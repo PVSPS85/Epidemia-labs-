@@ -10,8 +10,10 @@ import {
 } from 'lucide-react';
 
 const discoverNav = [
-  { name: 'Dashboard',   path: '/dashboard',             icon: Home },
-  { name: 'Diseases',    path: '/dashboard/diseases',    icon: Stethoscope },
+  { name: 'Dashboard',    path: '/dashboard',              icon: Home },
+  { name: 'Diseases',     path: '/dashboard/diseases',    icon: Stethoscope },
+  { name: 'Live Map',     path: '/dashboard/map',         icon: MapIcon },
+  { name: 'Simulations',  path: '/dashboard/simulations', icon: BarChart2 },
 ];
 
 const toolsNav = [

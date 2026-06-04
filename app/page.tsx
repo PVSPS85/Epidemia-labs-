@@ -4,7 +4,6 @@ import { useState } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
 import SignupForm from '@/components/auth/SignupForm';
 import { Activity } from 'lucide-react';
-``
 export default function LandingPage() {
   const [isLogin, setIsLogin] = useState(true);
 

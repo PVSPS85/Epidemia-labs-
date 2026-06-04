@@ -1,5 +1,5 @@
 /* ──────────────────────────────────────────────────────────────────────────
-   Epidemia-Labs — Global Stylesheet v3 (Premium Dark Mode)
+   Epidemia-Labs — Global Stylesheet v4 (Premium Dark Mode)
    Font: Poppins + JetBrains Mono
 ────────────────────────────────────────────────────────────────────────── */
 
@@ -10,12 +10,12 @@
 @layer base {
   :root {
     /* Background Layers */
-    --bg-void:        #050508;
-    --bg-base:        #0A0A0F;
-    --bg-surface:     #0F0F1A;
-    --bg-raised:      #14141F;
-    --bg-overlay:     #1A1A2E;
-    --bg-border:      #1E1E30;
+    --bg-void:        #030305;
+    --bg-base:        #080810;
+    --bg-surface:     #0D0D1A;
+    --bg-raised:      #121224;
+    --bg-overlay:     #181830;
+    --bg-border:      #1E1E38;
 
     /* Semantic SIR Colors */
     --sir-susceptible: #F59E0B;
@@ -30,16 +30,16 @@
     --action-warning:      #F59E0B;
 
     /* Text Hierarchy */
-    --text-primary:    #F8FAFC;
+    --text-primary:    #F1F5F9;
     --text-secondary:  #94A3B8;
     --text-muted:      #475569;
     --text-accent:     #3B82F6;
 
-    /* Glow / Shadow Tokens */
-    --glow-red:    0 0 20px rgba(239,68,68,0.4);
-    --glow-yellow: 0 0 20px rgba(245,158,11,0.4);
-    --glow-green:  0 0 20px rgba(16,185,129,0.4);
-    --glow-blue:   0 0 20px rgba(59,130,246,0.4);
+    /* Premium Glow / Shadow Tokens */
+    --glow-red:    0 0 24px rgba(239,68,68,0.5);
+    --glow-yellow: 0 0 24px rgba(245,158,11,0.5);
+    --glow-green:  0 0 24px rgba(16,185,129,0.5);
+    --glow-blue:   0 0 24px rgba(59,130,246,0.5);
   }
 
   *, *::before, *::after {
@@ -63,6 +63,7 @@
   :focus-visible {
     outline: 2px solid var(--action-primary);
     outline-offset: 2px;
+    border-radius: 4px;
   }
 
   /* Ensure all form inputs have visible text on dark backgrounds */
@@ -93,9 +94,15 @@
   /* Subtle grid background for auth pages */
   .bg-grid {
     background-image:
-      linear-gradient(rgba(30, 30, 48, 0.4) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(30, 30, 48, 0.4) 1px, transparent 1px);
+      linear-gradient(rgba(30, 30, 56, 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 30, 56, 0.5) 1px, transparent 1px);
     background-size: 32px 32px;
+  }
+
+  /* Hexagonal grid for a sci-fi feel */
+  .bg-hex-grid {
+    background-image: radial-gradient(circle, rgba(59,130,246,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   /* Shimmer skeleton animation */
@@ -121,27 +128,117 @@
 
   /* Glass morphism card */
   .glass {
-    background: rgba(15, 15, 26, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(13, 13, 26, 0.75);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--bg-border);
+  }
+
+  /* Premium card glow on hover */
+  .hover-glow-blue:hover {
+    box-shadow: 0 0 0 1px rgba(59,130,246,0.3), 0 8px 32px rgba(59,130,246,0.15);
+  }
+  .hover-glow-red:hover {
+    box-shadow: 0 0 0 1px rgba(239,68,68,0.3), 0 8px 32px rgba(239,68,68,0.15);
+  }
+
+  /* Text gradient */
+  .text-gradient-blue {
+    background: linear-gradient(135deg, #60A5FA, #3B82F6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-cyan {
+    background: linear-gradient(135deg, #67E8F9, #06B6D4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
 
 /* ── Custom scrollbar ─────────────────────────────────────────── */
-::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar        { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track  { background: var(--bg-void); }
 ::-webkit-scrollbar-thumb  { background: var(--bg-border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* ── Map Animations ─────────────────────────────────────────── */
+/* ── Keyframes ───────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 @keyframes draw-line {
-  0% { stroke-dashoffset: 1000; }
+  0%   { stroke-dashoffset: 1000; }
   100% { stroke-dashoffset: 0; }
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  0%   { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
 }
 
 .animate-draw-line {
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
   animation: draw-line 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+/* ── Premium Input Styles ─────────────────────────────────────── */
+.input-premium {
+  background: var(--bg-base);
+  border: 1px solid var(--bg-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.input-premium:focus {
+  outline: none;
+  border-color: var(--action-primary);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+
+/* ── Stat number glow effect ─────────────────────────────────── */
+.stat-glow-red    { text-shadow: 0 0 20px rgba(239,68,68,0.5); }
+.stat-glow-yellow { text-shadow: 0 0 20px rgba(245,158,11,0.5); }
+.stat-glow-green  { text-shadow: 0 0 20px rgba(16,185,129,0.5); }
+.stat-glow-blue   { text-shadow: 0 0 20px rgba(59,130,246,0.5); }
+
+/* ── Sidebar active indicator glow ──────────────────────────── */
+.sidebar-active-glow {
+  box-shadow: inset 2px 0 0 var(--action-primary),
+              inset 0 0 24px rgba(59,130,246,0.05);
 }

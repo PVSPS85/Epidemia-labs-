@@ -2,19 +2,56 @@
 
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import { Search, Bell, ChevronDown } from 'lucide-react';
+import { Search, Bell, ChevronDown, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard':              'Dashboard',
-  '/dashboard/diseases':     'Diseases',
-  '/dashboard/map':          'Live Map',
-  '/dashboard/simulations':  'Simulations',
-  '/dashboard/alerts':       'Alerts',
-  '/dashboard/saved':        'Saved',
-  '/dashboard/settings':     'Settings',
-  '/publisher':              'Publisher Dashboard',
-  '/publish/new':            'Publish Research',
+  '/dashboard':             'Dashboard',
+  '/dashboard/diseases':    'Diseases',
+  '/dashboard/map':         'Live Map',
+  '/dashboard/simulations': 'Simulations',
+  '/dashboard/alerts':      'Alerts',
+  '/dashboard/saved':       'Saved',
+  '/dashboard/settings':    'Settings',
+  '/publisher':             'Publisher Dashboard',
+  '/publish/new':           'Publish Research',
 };
+
+function LiveClock() {
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    // Set initial time on mount (client only) to avoid hydration mismatch
+    setNow(new Date());
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!now) return null;
+
+  const timeStr = now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+  const dateStr = now.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  return (
+    <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-border">
+      <Clock className="w-3.5 h-3.5 text-action-primary flex-shrink-0" />
+      <div className="flex flex-col leading-none">
+        <span className="font-mono text-xs font-bold text-textPrimary tracking-wider">{timeStr}</span>
+        <span className="text-[10px] text-textMuted mt-0.5">{dateStr}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function TopNavbar() {
   const pathname = usePathname();
@@ -46,8 +83,11 @@ export default function TopNavbar() {
         </div>
       </div>
 
-      {/* Right: Actions */}
+      {/* Right: Live Clock + Actions */}
       <div className="flex items-center gap-3">
+        {/* Real-time clock */}
+        <LiveClock />
+
         {/* Notification bell */}
         <button className="relative p-2 text-textSecondary hover:text-textPrimary transition-colors rounded-full hover:bg-surface">
           <Bell className="w-5 h-5" />

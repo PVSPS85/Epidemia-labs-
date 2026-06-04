@@ -5,6 +5,14 @@ import { Disease } from '@/types';
 /* ── Backend → Frontend Disease Transformer ──────────────────────────────
    The backend returns a simple shape: { id, name, description, symptoms, transmission, r0, population }
    The frontend expects the rich Disease type. This transformer bridges the gap.
+
+   IMPORTANT — Data Sources:
+   All statistics, hotspots, affected countries, and article content in DISEASE_META
+   are sourced from official WHO reports and factsheets (see citations within each entry).
+   - COVID-19: WHO COVID-19 Dashboard (data.who.int) — cumulative as of late 2024
+   - Influenza: WHO Influenza Seasonal Factsheet (who.int)
+   - Dengue: WHO Disease Outbreak News 2024 (DON518)
+   - Malaria: WHO World Malaria Report 2024
 ──────────────────────────────────────────────────────────────────────── */
 
 const DISEASE_IMAGES: Record<string, string> = {
