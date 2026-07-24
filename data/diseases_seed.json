@@ -34,5 +34,59 @@
     "transmission": "Vector-borne (Anopheles mosquitoes).",
     "r0": 15.0,
     "population": 1000000
+  },
+  {
+    "id": "ebola",
+    "name": "Ebola Virus Disease",
+    "description": "A rare but severe, often fatal illness in humans caused by Ebola virus (family Filoviridae). Outbreaks occur primarily in tropical regions of sub-Saharan Africa.",
+    "symptoms": ["Fever", "Severe headache", "Muscle pain", "Vomiting", "Diarrhea", "Unexplained hemorrhaging"],
+    "transmission": "Direct contact with blood, secretions, organs, or other bodily fluids of infected people or animals.",
+    "r0": 2.0,
+    "population": 1000000
+  },
+  {
+    "id": "tuberculosis",
+    "name": "Tuberculosis",
+    "description": "An infectious disease caused by Mycobacterium tuberculosis bacteria that most often affects the lungs. It is the world's second leading infectious killer after COVID-19.",
+    "symptoms": ["Chronic cough (3+ weeks)", "Coughing up blood", "Chest pain", "Weight loss", "Night sweats", "Fever"],
+    "transmission": "Airborne via respiratory droplets when infected persons cough, sneeze, or spit.",
+    "r0": 4.5,
+    "population": 1000000
+  },
+  {
+    "id": "hiv-aids",
+    "name": "HIV/AIDS",
+    "description": "Human Immunodeficiency Virus (HIV) attacks the body's immune system. If not treated, it can lead to AIDS (Acquired Immunodeficiency Syndrome). No effective cure exists, but with proper treatment, HIV can be controlled.",
+    "symptoms": ["Fever", "Fatigue", "Swollen lymph nodes", "Weight loss", "Oral ulcers", "Night sweats"],
+    "transmission": "Through exchange of certain body fluids: blood, breast milk, semen, and vaginal secretions.",
+    "r0": 3.5,
+    "population": 1000000
+  },
+  {
+    "id": "cholera",
+    "name": "Cholera",
+    "description": "An acute diarrhoeal infection caused by ingestion of food or water contaminated with Vibrio cholerae bacterium. Cholera remains a global threat to public health and an indicator of inequity and lack of social development.",
+    "symptoms": ["Profuse watery diarrhea", "Vomiting", "Rapid dehydration", "Leg cramps", "Restlessness"],
+    "transmission": "Fecal-oral route through contaminated water and food.",
+    "r0": 2.5,
+    "population": 1000000
+  },
+  {
+    "id": "mpox",
+    "name": "Mpox",
+    "description": "A viral zoonotic disease caused by Monkeypox virus (MPXV), belonging to the Orthopoxvirus genus. In 2022-2024, a multi-country outbreak spread globally beyond its traditional endemic regions in Africa.",
+    "symptoms": ["Fever", "Rash (fluid-filled lesions)", "Headache", "Muscle aches", "Swollen lymph nodes", "Exhaustion"],
+    "transmission": "Close physical contact with infected persons, contaminated materials, or infected animals.",
+    "r0": 1.8,
+    "population": 1000000
+  },
+  {
+    "id": "measles",
+    "name": "Measles",
+    "description": "A highly contagious viral disease caused by the Morbillivirus. Despite the availability of a safe and effective vaccine, measles remains one of the leading causes of death among young children globally.",
+    "symptoms": ["High fever", "Cough", "Runny nose", "Conjunctivitis (red eyes)", "Koplik spots", "Full-body rash"],
+    "transmission": "Airborne via respiratory droplets and aerosolized particles. Extremely contagious.",
+    "r0": 15.0,
+    "population": 1000000
   }
 ]
